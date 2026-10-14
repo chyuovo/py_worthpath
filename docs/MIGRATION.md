@@ -8,52 +8,53 @@ frontend/ 保留源 React 页面、组件、样式、国际化和静态文件；
 
 | 文件 | 状态 |
 | --- | --- |
-| frontend/index.html | 原样保留（Vite 配置除外） |
-| frontend/package.json | 原样保留（Vite 配置除外） |
-| frontend/tsconfig.json | 原样保留（Vite 配置除外） |
-| frontend/vite.config.ts | 原样保留（Vite 配置除外） |
-| frontend/scripts/generate-locales.cjs | 原样保留（Vite 配置除外） |
-| frontend/src/AccountPicker.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/AdminPanel.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/agent-display.ts | 原样保留（Vite 配置除外） |
-| frontend/src/AgentConnections.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/AgentDrafts.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/AgentReview.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/api.ts | 原样保留（Vite 配置除外） |
-| frontend/src/App.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/Calendar.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/DebtPaymentForm.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/FullScreenLoading.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/group-order.ts | 原样保留（Vite 配置除外） |
-| frontend/src/GroupOrderContext.ts | 原样保留（Vite 配置除外） |
-| frontend/src/GroupOrderList.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/i18n.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/IconLibrary.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/IconPicker.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/login-preferences.ts | 原样保留（Vite 配置除外） |
-| frontend/src/main.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/MetalPanel.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/navigation.ts | 原样保留（Vite 配置除外） |
-| frontend/src/NetWorthChart.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/overview-cards.ts | 原样保留（Vite 配置除外） |
-| frontend/src/page-preferences.ts | 原样保留（Vite 配置除外） |
-| frontend/src/PositionDeletion.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/PrimaryNav.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/PullToRefresh.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/QuickJournal.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/QuickTransfer.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/repayment.ts | 原样保留（Vite 配置除外） |
-| frontend/src/request-loading.ts | 原样保留（Vite 配置除外） |
-| frontend/src/SchedulePanel.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/style.css | 原样保留（Vite 配置除外） |
-| frontend/src/Toast.tsx | 原样保留（Vite 配置除外） |
-| frontend/src/TransferForm.tsx | 原样保留（Vite 配置除外） |
-| frontend/test/i18n.test.ts | 原样保留（Vite 配置除外） |
-| frontend/test/login-preferences.test.ts | 原样保留（Vite 配置除外） |
-| frontend/test/net-worth-chart.test.ts | 原样保留（Vite 配置除外） |
-| frontend/test/quick-entry.test.ts | 原样保留（Vite 配置除外） |
-| frontend/src/locales/en.json | 原样保留（Vite 配置除外） |
-| frontend/src/locales/zh-Hant.json | 原样保留（Vite 配置除外） |
+| frontend/index.html | 原样保留 |
+| frontend/package.json | 独立依赖与运行时声明，保留原前端命令 |
+| frontend/tsconfig.json | 原样保留 |
+| frontend/vite.config.ts | 只读取前端自身环境变量并代理 HTTP API |
+| frontend/pnpm-lock.yaml | 已生成独立可复现锁文件 |
+| frontend/scripts/generate-locales.cjs | 原样保留 |
+| frontend/src/AccountPicker.tsx | 原样保留 |
+| frontend/src/AdminPanel.tsx | 原样保留 |
+| frontend/src/agent-display.ts | 原样保留 |
+| frontend/src/AgentConnections.tsx | 原样保留 |
+| frontend/src/AgentDrafts.tsx | 原样保留 |
+| frontend/src/AgentReview.tsx | 原样保留 |
+| frontend/src/api.ts | 原样保留 |
+| frontend/src/App.tsx | 原样保留 |
+| frontend/src/Calendar.tsx | 原样保留 |
+| frontend/src/DebtPaymentForm.tsx | 原样保留 |
+| frontend/src/FullScreenLoading.tsx | 原样保留 |
+| frontend/src/group-order.ts | 原样保留 |
+| frontend/src/GroupOrderContext.ts | 原样保留 |
+| frontend/src/GroupOrderList.tsx | 原样保留 |
+| frontend/src/i18n.tsx | 原样保留 |
+| frontend/src/IconLibrary.tsx | 原样保留 |
+| frontend/src/IconPicker.tsx | 原样保留 |
+| frontend/src/login-preferences.ts | 原样保留 |
+| frontend/src/main.tsx | 原样保留 |
+| frontend/src/MetalPanel.tsx | 原样保留 |
+| frontend/src/navigation.ts | 原样保留 |
+| frontend/src/NetWorthChart.tsx | 原样保留 |
+| frontend/src/overview-cards.ts | 原样保留 |
+| frontend/src/page-preferences.ts | 原样保留 |
+| frontend/src/PositionDeletion.tsx | 原样保留 |
+| frontend/src/PrimaryNav.tsx | 原样保留 |
+| frontend/src/PullToRefresh.tsx | 原样保留 |
+| frontend/src/QuickJournal.tsx | 原样保留 |
+| frontend/src/QuickTransfer.tsx | 原样保留 |
+| frontend/src/repayment.ts | 原样保留 |
+| frontend/src/request-loading.ts | 原样保留 |
+| frontend/src/SchedulePanel.tsx | 原样保留 |
+| frontend/src/style.css | 原样保留 |
+| frontend/src/Toast.tsx | 原样保留 |
+| frontend/src/TransferForm.tsx | 原样保留 |
+| frontend/test/i18n.test.ts | 原样保留 |
+| frontend/test/login-preferences.test.ts | 原样保留 |
+| frontend/test/net-worth-chart.test.ts | 原样保留 |
+| frontend/test/quick-entry.test.ts | 原样保留 |
+| frontend/src/locales/en.json | 原样保留 |
+| frontend/src/locales/zh-Hant.json | 原样保留 |
 
 ## HTTP 契约
 
