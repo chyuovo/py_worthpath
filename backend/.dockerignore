@@ -1,0 +1,21 @@
+# 仅发送构建必需内容，排除真实配置、数据库数据和本地依赖。
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!uv.lock
+!app/
+!app/**
+!alembic.ini
+!alembic/
+!alembic/**
+!assets/
+!assets/**
+!scripts/
+!scripts/database.py
+!scripts/seed_icons.py
+!scripts/run.py
+**/__pycache__/
+**/*.py[cod]
+**/.env
+**/.env.*

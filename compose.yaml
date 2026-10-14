@@ -1,0 +1,67 @@
+name: py-worthpath
+
+services:
+  backend:
+    image: py-worthpath-backend:0.1.0
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env.docker
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      PORT: "3100"
+      API_ALLOWED_HOSTS: "${PUBLIC_HOST:?Set PUBLIC_HOST in deploy/.env},127.0.0.1:3100"
+      WEB_ORIGIN: "${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN in deploy/.env}"
+      MCP_PUBLIC_URL: "${PUBLIC_ORIGIN}/mcp"
+      MCP_WEB_URL: "${PUBLIC_ORIGIN}"
+      MCP_ALLOWED_HOSTS: "${PUBLIC_HOST}"
+      MCP_ALLOWED_ORIGINS: "${PUBLIC_ORIGIN}"
+      MCP_ALLOW_LOOPBACK_HOSTS: "false"
+      NETWORK_ALLOW_HTTP: "${ALLOW_HTTP:-false}"
+      NETWORK_ALLOW_HTTP_REDIRECTS: "false"
+      NETWORK_ALLOW_WILDCARD_ORIGINS: "false"
+      NETWORK_REQUIRE_SECURE_COOKIE: "${COOKIE_SECURE:-true}"
+      COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+      COOKIE_SAME_SITE: strict
+      NETWORK_HSTS: "${COOKIE_SECURE:-true}"
+      ICON_STORAGE_DIR: /app/data/icons
+    # 后端只在容器网络开放；前端通过 HTTP 调用，不引用后端源码。
+    expose:
+      - "3100"
+    volumes:
+      - backend-runtime:/app/runtime
+      - backend-icons:/app/data/icons
+      - backend-backups:/app/backups
+    init: true
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    image: py-worthpath-frontend:0.1.0
+    build:
+      context: ./frontend
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  backend-runtime:
+  backend-icons:
+  backend-backups:

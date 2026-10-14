@@ -8,7 +8,7 @@ WorthPath 后端已迁移为 Python FastAPI、SQLAlchemy 和 Alembic，继续使
 - `backend/`：FastAPI、SQLAlchemy 2、Alembic，独立 pyproject.toml、uv.lock 和 .env。
 - 两端只通过 HTTP 通信；前端不读取后端 .env，后端不需要 Node.js、pnpm 或前端源码。
 - `docs/MIGRATION.md`：页面、组件、68 个 HTTP 路由、16 个模型、历史迁移和集成清单。
-- 不包含 Docker 配置，不执行部署或自动推送。
+- Docker 打包与部署命令见 [docs/DOCKER.md](docs/DOCKER.md)，前后端各自构建镜像，MySQL 外置。
 
 已验证环境：Windows PowerShell，Python 3.14.7、Node.js 24.21.0、pnpm 11.19.0、MySQL 8.0.45。后端要求 Python 3.12+，前端要求 Node.js 22.12+。
 
