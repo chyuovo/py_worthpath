@@ -1,0 +1,10 @@
+{
+  "source-typecheck": {
+    "exitCode": 0,
+    "log": "logs/source-typecheck.log"
+  },
+  "source-unit-tests": {
+    "exitCode": 0,
+    "log": "logs/source-unit-tests.log"
+  }
+}

@@ -1,0 +1,1845 @@
+{
+  "User": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "username",
+        "type": "VARCHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "登录用户名，唯一",
+        "nullable": false
+      },
+      {
+        "name": "passwordHash",
+        "type": "VARCHAR(255) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "登录密码的 bcrypt 哈希，不存储明文",
+        "nullable": false
+      },
+      {
+        "name": "baseCurrency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "'CNY'",
+        "comment": "本位币代码",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "记录创建时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "记录更新时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "idleMinutes",
+        "type": "INTEGER",
+        "default": "'30'",
+        "comment": "无操作退出分钟数，0 表示关闭",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "hiddenMenus",
+        "type": "VARCHAR(128) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "''",
+        "comment": "隐藏菜单标识列表",
+        "nullable": false
+      },
+      {
+        "name": "showNotes",
+        "type": "TINYINT",
+        "default": "'1'",
+        "comment": "是否显示备注",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "accountGroupOrder",
+        "type": "JSON",
+        "default": null,
+        "comment": "账户分组显示顺序；空值表示沿用默认顺序",
+        "nullable": true
+      },
+      {
+        "name": "sessionHours",
+        "type": "INTEGER",
+        "default": "'168'",
+        "comment": "登录有效时长（小时），范围 1 至 720",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "requireHiddenPassword",
+        "type": "TINYINT",
+        "default": "'1'",
+        "comment": "查看隐藏项目是否需要再次验证密码",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "overviewCards",
+        "type": "JSON",
+        "default": null,
+        "comment": "总览显示的卡片键列表，NULL 表示默认全部显示",
+        "nullable": true
+      },
+      {
+        "name": "includeIndependentAssets",
+        "type": "TINYINT",
+        "default": "'1'",
+        "comment": "独立资产是否参与资产总览和净资产轨迹",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "role",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "'user'",
+        "comment": "系统权限：admin、user 或 readonly；管理员不能查看其他用户财务数据",
+        "nullable": false
+      },
+      {
+        "name": "banned",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "封禁后禁止登录和使用已有会话、MCP 授权",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "mustChangePassword",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "首次登录必须设置新的强密码",
+        "nullable": false,
+        "autoincrement": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "User_username_key",
+        "column_names": [
+          "username"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "AgentCall": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "审计标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "grantId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "调用所属连接标识",
+        "nullable": false
+      },
+      {
+        "name": "tool",
+        "type": "VARCHAR(100) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "调用的工具名称",
+        "nullable": false
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "结果状态：success 或 error",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "调用完成时间，UTC",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "AgentCall_userId_createdAt_idx",
+        "column_names": [
+          "userId",
+          "createdAt"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "AgentCall_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "AgentPolicy": {
+    "columns": [
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "mode",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "'draft'",
+        "comment": "写入策略：readonly 只读、draft 草稿、direct 普通直接写入",
+        "nullable": false
+      }
+    ],
+    "indexes": [],
+    "foreignKeys": [
+      {
+        "name": "AgentPolicy_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "userId"
+      ],
+      "name": null
+    }
+  },
+  "AgentClient": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "metadata",
+        "type": "JSON",
+        "default": null,
+        "comment": "公开客户端注册元数据，不保存用户凭据",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "创建时间，UTC",
+        "nullable": false
+      }
+    ],
+    "indexes": [],
+    "foreignKeys": [],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "AgentAuthorization": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": true
+      },
+      {
+        "name": "clientId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "OAuth 客户端标识；个人令牌为空",
+        "nullable": false
+      },
+      {
+        "name": "parameters",
+        "type": "JSON",
+        "default": null,
+        "comment": "具体操作参数；禁止保存密码及令牌",
+        "nullable": false
+      },
+      {
+        "name": "codeDigest",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "一次性授权码 SHA-256 摘要",
+        "nullable": true
+      },
+      {
+        "name": "expiresAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "到期时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "'pending'",
+        "comment": "当前处理状态",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "AgentAuthorization_codeDigest_key",
+        "column_names": [
+          "codeDigest"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "AgentAuthorization_userId_fkey",
+        "column_names": [
+          "userId"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "AgentAuthorization_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "AgentGrant": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "clientId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "OAuth 客户端标识；个人令牌为空",
+        "nullable": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "用户可见连接名称",
+        "nullable": false
+      },
+      {
+        "name": "scopes",
+        "type": "JSON",
+        "default": null,
+        "comment": "权限列表：read、draft 或 write；隐藏账户附加权限 hidden_read、hidden_write",
+        "nullable": false
+      },
+      {
+        "name": "resource",
+        "type": "VARCHAR(500) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "令牌适用的规范 MCP 资源地址",
+        "nullable": false
+      },
+      {
+        "name": "accessDigest",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "访问令牌 SHA-256 摘要；完整值仅颁发时返回",
+        "nullable": false
+      },
+      {
+        "name": "refreshDigest",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "刷新令牌 SHA-256 摘要，使用后轮换",
+        "nullable": true
+      },
+      {
+        "name": "expiresAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "访问令牌到期时间，UTC；空表示可撤销的永久个人令牌",
+        "nullable": true
+      },
+      {
+        "name": "refreshExpiresAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "刷新授权到期时间，UTC；空表示永久 OAuth 授权或个人令牌不适用",
+        "nullable": true
+      },
+      {
+        "name": "revokedAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "撤销时间，UTC；空表示未撤销",
+        "nullable": true
+      },
+      {
+        "name": "sessionId",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "本连接的独立业务授权会话标识，不作为 MCP 凭证",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "创建时间，UTC",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "AgentGrant_accessDigest_key",
+        "column_names": [
+          "accessDigest"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "AgentGrant_refreshDigest_key",
+        "column_names": [
+          "refreshDigest"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "AgentGrant_userId_createdAt_idx",
+        "column_names": [
+          "userId",
+          "createdAt"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "AgentGrant_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "AgentOperation": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "grantId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "发起操作的授权连接标识",
+        "nullable": false
+      },
+      {
+        "name": "key",
+        "type": "VARCHAR(128) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "同用户唯一的客户端幂等键",
+        "nullable": false
+      },
+      {
+        "name": "hash",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "工具和参数的规范摘要；拒绝同键不同参数",
+        "nullable": false
+      },
+      {
+        "name": "tool",
+        "type": "VARCHAR(100) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "业务工具名称",
+        "nullable": false
+      },
+      {
+        "name": "parameters",
+        "type": "JSON",
+        "default": null,
+        "comment": "具体操作参数；禁止保存密码及令牌",
+        "nullable": false
+      },
+      {
+        "name": "snapshot",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "确认前的账目版本摘要，防止覆盖并发修改",
+        "nullable": false
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "'pending'",
+        "comment": "当前处理状态",
+        "nullable": false
+      },
+      {
+        "name": "expiresAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "到期时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "result",
+        "type": "JSON",
+        "default": null,
+        "comment": "结构化操作结果或最近提交失败原因",
+        "nullable": true
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "创建时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "completedAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "完成或取消时间，UTC",
+        "nullable": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "AgentOperation_userId_createdAt_idx",
+        "column_names": [
+          "userId",
+          "createdAt"
+        ],
+        "unique": false
+      },
+      {
+        "name": "AgentOperation_userId_key_key",
+        "column_names": [
+          "userId",
+          "key"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "AgentOperation_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "Session": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "随机会话令牌的 SHA-256 摘要",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "expiresAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "会话过期时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "lastActivity",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "最后有效交互时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "revealUntil",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "隐藏项目授权截止时间，UTC；空表示未解锁",
+        "nullable": true
+      },
+      {
+        "name": "backupDigest",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "已下载备份内容的 SHA-256 摘要",
+        "nullable": true
+      },
+      {
+        "name": "backupExpiresAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "备份清空确认凭据截止时间，UTC",
+        "nullable": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "Session_userId_idx",
+        "column_names": [
+          "userId"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "Session_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "Position": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "kind",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "项目类型：account 账户、asset 独立资产、debt 债务",
+        "nullable": false
+      },
+      {
+        "name": "side",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "统计方向：asset 资产或借出应收、liability 负债或借入应付",
+        "nullable": false
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "显示名称",
+        "nullable": false
+      },
+      {
+        "name": "category",
+        "type": "VARCHAR(40) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "项目分类代码",
+        "nullable": false
+      },
+      {
+        "name": "currency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "原始币种代码",
+        "nullable": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "用户备注，原文保留",
+        "nullable": false
+      },
+      {
+        "name": "archived",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "是否归档；归档项目仍计入总额",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "记录创建时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "记录更新时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "importedFromId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "备份导入来源项目标识，用于重复导入识别",
+        "nullable": true
+      },
+      {
+        "name": "hidden",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "是否隐藏；未解锁时不参与可见范围统计",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "iconId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "关联账户图标标识",
+        "nullable": true
+      },
+      {
+        "name": "groupName",
+        "type": "VARCHAR(60) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "''",
+        "comment": "自定义账户分组",
+        "nullable": false
+      },
+      {
+        "name": "included",
+        "type": "TINYINT",
+        "default": "'1'",
+        "comment": "是否参与资产负债总额及净资产轨迹",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "metalType",
+        "type": "VARCHAR(12) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "贵金属品种：gold 黄金或 silver 白银",
+        "nullable": true
+      },
+      {
+        "name": "metalGrams",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "贵金属总重量，单位克",
+        "nullable": true
+      },
+      {
+        "name": "metalPurity",
+        "type": "DECIMAL(12, 8)",
+        "default": "'1.00000000'",
+        "comment": "贵金属纯度比例，0 至 1",
+        "nullable": false
+      },
+      {
+        "name": "autoValuation",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "是否随每日价格更新自动记录估值",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "metalCostPerGram",
+        "type": "DECIMAL(24, 12)",
+        "default": null,
+        "comment": "买入时每克实物成本，原币；空值表示不计算盈亏",
+        "nullable": true
+      },
+      {
+        "name": "lastRepaymentMonth",
+        "type": "CHAR(7) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "最后手动标记已完成还款的业务月份，UTC+8 YYYY-MM；空表示未标记",
+        "nullable": true
+      },
+      {
+        "name": "lastBookedDate",
+        "type": "CHAR(10) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "最后手动标记已完成记账的业务日期，UTC+8 YYYY-MM-DD；空表示未标记",
+        "nullable": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "Position_iconId_fkey",
+        "column_names": [
+          "iconId"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Position_userId_importedFromId_key",
+        "column_names": [
+          "userId",
+          "importedFromId"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "Position_userId_kind_idx",
+        "column_names": [
+          "userId",
+          "kind"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "Position_iconId_fkey",
+        "constrained_columns": [
+          "iconId"
+        ],
+        "referred_schema": null,
+        "referred_table": "icon",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "SET NULL"
+        }
+      },
+      {
+        "name": "Position_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "Revision": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "positionId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属持有项目标识",
+        "nullable": false
+      },
+      {
+        "name": "amount",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "变更后的原币绝对余额，不是收支增量，禁止对全部历史求和",
+        "nullable": false
+      },
+      {
+        "name": "effectiveDate",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "北京时间业务时间对应的 UTC，精确到分钟",
+        "nullable": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "用户备注，原文保留",
+        "nullable": false
+      },
+      {
+        "name": "reason",
+        "type": "VARCHAR(20) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "变更原因：初始、余额、估值、转账或借贷配对操作",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "记录创建时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "记录更新时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "sequence",
+        "type": "INTEGER",
+        "default": null,
+        "comment": "数据库自增唯一顺序，同业务时间按此排序",
+        "nullable": false,
+        "autoincrement": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "Revision_positionId_effectiveDate_sequence_idx",
+        "column_names": [
+          "positionId",
+          "effectiveDate",
+          "sequence"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Revision_positionId_reason_effectiveDate_sequence_idx",
+        "column_names": [
+          "positionId",
+          "reason",
+          "effectiveDate",
+          "sequence"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Revision_sequence_key",
+        "column_names": [
+          "sequence"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "Revision_positionId_fkey",
+        "constrained_columns": [
+          "positionId"
+        ],
+        "referred_schema": null,
+        "referred_table": "position",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "PositionLink": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "sourceId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "关联来源项目标识，通常为债务",
+        "nullable": false
+      },
+      {
+        "name": "targetId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "关联目标项目标识，通常为账户或资产",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "PositionLink_sourceId_targetId_key",
+        "column_names": [
+          "sourceId",
+          "targetId"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "PositionLink_targetId_fkey",
+        "column_names": [
+          "targetId"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "PositionLink_sourceId_fkey",
+        "constrained_columns": [
+          "sourceId"
+        ],
+        "referred_schema": null,
+        "referred_table": "position",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      },
+      {
+        "name": "PositionLink_targetId_fkey",
+        "constrained_columns": [
+          "targetId"
+        ],
+        "referred_schema": null,
+        "referred_table": "position",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "ExchangeRate": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "currency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "原始币种代码",
+        "nullable": false
+      },
+      {
+        "name": "baseCurrency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "本位币代码",
+        "nullable": false
+      },
+      {
+        "name": "date",
+        "type": "DATE",
+        "default": null,
+        "comment": "汇率业务日期",
+        "nullable": false
+      },
+      {
+        "name": "rate",
+        "type": "DECIMAL(24, 12)",
+        "default": null,
+        "comment": "每单位原币对应的本位币金额",
+        "nullable": false
+      },
+      {
+        "name": "source",
+        "type": "VARCHAR(30) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "汇率来源标识，保留已有历史来源",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "ExchangeRate_userId_currency_baseCurrency_date_key",
+        "column_names": [
+          "userId",
+          "currency",
+          "baseCurrency",
+          "date"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "ExchangeRate_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "Icon": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "ownerId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "上传用户标识；空可表示系统图标或原用户已删除",
+        "nullable": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "显示名称",
+        "nullable": false
+      },
+      {
+        "name": "shared",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "是否公开共享给已登录用户",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "hash",
+        "type": "CHAR(64) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "规范化图标内容的 SHA-256 摘要",
+        "nullable": false
+      },
+      {
+        "name": "data",
+        "type": "MEDIUMBLOB",
+        "default": null,
+        "comment": "规范化静态 PNG 图片二进制",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "记录创建时间，UTC",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "Icon_ownerId_hash_shared_key",
+        "column_names": [
+          "ownerId",
+          "hash",
+          "shared"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "Icon_shared_name_idx",
+        "column_names": [
+          "shared",
+          "name"
+        ],
+        "unique": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "Icon_ownerId_fkey",
+        "constrained_columns": [
+          "ownerId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "SET NULL"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "Transfer": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "importedFromId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "备份导入来源项目标识，用于重复导入识别",
+        "nullable": true
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "sourceId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "来源资产账户标识",
+        "nullable": false
+      },
+      {
+        "name": "targetId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "目标账户或债务标识",
+        "nullable": false
+      },
+      {
+        "name": "sourceRevisionId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "来源账户配对余额历史标识",
+        "nullable": false
+      },
+      {
+        "name": "targetRevisionId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "目标项目配对余额历史标识",
+        "nullable": false
+      },
+      {
+        "name": "sourceCurrency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "来源账户币种",
+        "nullable": false
+      },
+      {
+        "name": "targetCurrency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "目标项目币种",
+        "nullable": false
+      },
+      {
+        "name": "amount",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "本次来源账户本金金额，不是变更后余额",
+        "nullable": false
+      },
+      {
+        "name": "received",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "本次目标到账金额或债务本金金额",
+        "nullable": false
+      },
+      {
+        "name": "fee",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "来源币种手续费；负数表示优惠",
+        "nullable": false
+      },
+      {
+        "name": "effectiveDate",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "北京时间业务时间对应的 UTC，精确到分钟",
+        "nullable": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "用户备注，原文保留",
+        "nullable": false
+      },
+      {
+        "name": "createdAt",
+        "type": "DATETIME",
+        "default": "CURRENT_TIMESTAMP(3)",
+        "comment": "记录创建时间，UTC",
+        "nullable": false
+      },
+      {
+        "name": "operation",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": "'transfer'",
+        "comment": "操作类型：transfer 转账、borrow 借入、lend 借出、collect 收款、repay 还款",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "Transfer_sourceId_fkey",
+        "column_names": [
+          "sourceId"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Transfer_sourceRevisionId_key",
+        "column_names": [
+          "sourceRevisionId"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "Transfer_targetId_fkey",
+        "column_names": [
+          "targetId"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Transfer_targetRevisionId_key",
+        "column_names": [
+          "targetRevisionId"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      },
+      {
+        "name": "Transfer_userId_effectiveDate_id_idx",
+        "column_names": [
+          "userId",
+          "effectiveDate",
+          "id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Transfer_userId_importedFromId_key",
+        "column_names": [
+          "userId",
+          "importedFromId"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "Transfer_sourceId_fkey",
+        "constrained_columns": [
+          "sourceId"
+        ],
+        "referred_schema": null,
+        "referred_table": "position",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      },
+      {
+        "name": "Transfer_targetId_fkey",
+        "constrained_columns": [
+          "targetId"
+        ],
+        "referred_schema": null,
+        "referred_table": "position",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      },
+      {
+        "name": "Transfer_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "Schedule": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "importedFromId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "备份来源计划标识，用于重复导入识别",
+        "nullable": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "计划显示名称",
+        "nullable": false
+      },
+      {
+        "name": "operation",
+        "type": "VARCHAR(16) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "操作类型：expense 支出或 transfer 转账",
+        "nullable": false
+      },
+      {
+        "name": "sourceId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "支出或转出资产账户标识",
+        "nullable": false
+      },
+      {
+        "name": "targetId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "转入账户标识；支出计划为空",
+        "nullable": true
+      },
+      {
+        "name": "amount",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "原币支出或转出金额",
+        "nullable": false
+      },
+      {
+        "name": "received",
+        "type": "DECIMAL(24, 8)",
+        "default": null,
+        "comment": "原币到账金额；支出计划为零",
+        "nullable": false
+      },
+      {
+        "name": "nextAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "下次到期业务时间对应的 UTC",
+        "nullable": false
+      },
+      {
+        "name": "intervalDays",
+        "type": "INTEGER",
+        "default": null,
+        "comment": "重复间隔天数；零表示仅执行一次",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "enabled",
+        "type": "TINYINT",
+        "default": "'1'",
+        "comment": "是否启用计划",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "completed",
+        "type": "TINYINT",
+        "default": "'0'",
+        "comment": "一次性计划是否已执行完毕",
+        "nullable": false,
+        "autoincrement": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "用户备注，原文保留",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "Schedule_userId_enabled_nextAt_idx",
+        "column_names": [
+          "userId",
+          "enabled",
+          "nextAt"
+        ],
+        "unique": false
+      },
+      {
+        "name": "Schedule_userId_importedFromId_key",
+        "column_names": [
+          "userId",
+          "importedFromId"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "Schedule_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  },
+  "MetalPrice": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "唯一标识",
+        "nullable": false
+      },
+      {
+        "name": "userId",
+        "type": "CHAR(36) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "所属用户标识，用于数据隔离",
+        "nullable": false
+      },
+      {
+        "name": "metalType",
+        "type": "VARCHAR(12) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "品种：gold 黄金或 silver 白银",
+        "nullable": false
+      },
+      {
+        "name": "currency",
+        "type": "CHAR(3) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "价格币种",
+        "nullable": false
+      },
+      {
+        "name": "price",
+        "type": "DECIMAL(24, 12)",
+        "default": null,
+        "comment": "纯金属每克价格",
+        "nullable": false
+      },
+      {
+        "name": "date",
+        "type": "DATE",
+        "default": null,
+        "comment": "报价日期，UTC+8 自然日",
+        "nullable": false
+      },
+      {
+        "name": "source",
+        "type": "VARCHAR(20) COLLATE \"utf8mb4_unicode_ci\"",
+        "default": null,
+        "comment": "价格来源：manual 或 goldapi",
+        "nullable": false
+      },
+      {
+        "name": "quotedAt",
+        "type": "DATETIME",
+        "default": null,
+        "comment": "报价对应时间，UTC",
+        "nullable": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "MetalPrice_userId_metalType_currency_date_key",
+        "column_names": [
+          "userId",
+          "metalType",
+          "currency",
+          "date"
+        ],
+        "unique": true,
+        "type": "UNIQUE"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "MetalPrice_userId_fkey",
+        "constrained_columns": [
+          "userId"
+        ],
+        "referred_schema": null,
+        "referred_table": "user",
+        "referred_columns": [
+          "id"
+        ],
+        "options": {
+          "onupdate": "CASCADE",
+          "ondelete": "CASCADE"
+        }
+      }
+    ],
+    "primaryKey": {
+      "constrained_columns": [
+        "id"
+      ],
+      "name": null
+    }
+  }
+}
