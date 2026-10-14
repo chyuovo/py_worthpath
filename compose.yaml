@@ -2,12 +2,10 @@ name: py-worthpath
 
 services:
   app:
-    image: py-worthpath:0.1.0
-    build:
-      context: .
-    # 服务器可设 WORTHPATH_ENV_FILE=/opt/docker/worthpath/.env.production 沿用原文件。
+    image: git.chyuovo.top/chyuovo/py_worthpath:latest
+    # 服务器固定目录；本地从根目录 Dockerfile 构建并推送镜像。
     env_file:
-      - ${WORTHPATH_ENV_FILE:-./backend/.env.docker}
+      - /opt/docker/py_worthpath/.env.docker
     environment:
       NODE_ENV: production
       API_HOST: 0.0.0.0
@@ -33,12 +31,20 @@ services:
     restart: unless-stopped
     volumes:
       - type: bind
-        source: ${WORTHPATH_ICON_DIR:-/opt/docker/worthpath/data/icons}
+        source: /opt/docker/py_worthpath/data/icons
         target: /app/data/icons
         bind:
           create_host_path: false
-      - app-runtime:/app/runtime
-      - app-backups:/app/backups
+      - type: bind
+        source: /opt/docker/py_worthpath/runtime
+        target: /app/runtime
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /opt/docker/py_worthpath/backups
+        target: /app/backups
+        bind:
+          create_host_path: false
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
@@ -59,7 +65,3 @@ networks:
   worthpath:
     external: true
     name: worthpath
-
-volumes:
-  app-runtime:
-  app-backups:

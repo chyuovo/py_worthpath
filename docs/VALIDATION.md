@@ -76,3 +76,11 @@ ORM 与真实结构已匹配字段、类型、精度、默认值、索引、外�
 - 4 项静态托管契约测试和前端生产构建通过；真实本地 HTTP 验证了首页、授权页面、HEAD、JS/CSS 字节一致、缺失资源/API 错误及 Host 限制。
 - 此次真实 HTTP 检查仅验证静态托管，显式关闭生命周期，不连接 MySQL 或启动行情任务；不是数据库、OAuth 或整个容器的端到端验收。临时 HTTP 进程已关闭，没有新增业务数据。
 - Compose 实际环境解析通过；未输出或提交真实环境文件。Docker 引擎仍未运行，因此没有完成 Linux 镜像构建及目标服务器联通性验证。
+
+## Docker 构建与推送补充（2026-10-14）
+
+- Linux/amd64 单镜像实际构建成功。pnpm 11 的依赖脚本校验最初拒绝 esbuild；已在 frontend/pnpm-workspace.yaml 仅批准 esbuild，并纳入 Docker 构建上下文，未放开其他依赖脚本。
+- 断网、只读、自动删除的临时容器通过 UID 1000、完整应用导入、bcrypt/cryptography/Pillow、HTML/JS/CSS、HEAD 和 404 检查；无 Node、uv、pytest、ruff 或真实环境文件。未加载真实凭据、连接数据库或执行生命周期任务。
+- 已推送 git.chyuovo.top/chyuovo/py_worthpath:latest，远端摘要与本地一致：sha256:702d35bafd41ca0b918388225fa29250db0a491b51676efb8158feeed61e7e2f。压缩镜像层及配置共 66233906 字节（约 63.2 MiB），本地镜像 278585596 字节（约 265.7 MiB）。
+- Compose 只启动上传的镜像，环境文件及图标、运行目录、备份目录全部使用 /opt/docker/py_worthpath/ 下绝对路径；保留 worthpath 外部网络和 host-gateway。已通过不解析真实环境文件的 Compose 配置检查。
+- 未部署服务器或 Git push，生产 MySQL、HTTPS/MCP 联通性仍需服务器验证。
