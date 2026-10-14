@@ -1,7 +1,7 @@
 """Reject sensitive paths and accidentally staged real environment values."""
 from pathlib import Path
 import re, subprocess
-files=subprocess.check_output(["git","diff","--cached","--name-only","-z"]).decode().split(chr(0))
+files=subprocess.check_output(["git","diff","--cached","--name-only","--diff-filter=ACMR","-z"]).decode().split(chr(0))
 bad=[]
 for name in filter(None,files):
     path=Path(name)
