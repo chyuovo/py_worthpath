@@ -1,40 +1,52 @@
 name: py-worthpath
 
 services:
-  backend:
-    image: py-worthpath-backend:0.1.0
+  app:
+    image: py-worthpath:0.1.0
     build:
-      context: ./backend
+      context: .
+    # 服务器可设 WORTHPATH_ENV_FILE=/opt/docker/worthpath/.env.production 沿用原文件。
     env_file:
-      - ./backend/.env.docker
+      - ${WORTHPATH_ENV_FILE:-./backend/.env.docker}
     environment:
       NODE_ENV: production
       API_HOST: 0.0.0.0
       PORT: "3100"
-      API_ALLOWED_HOSTS: "${PUBLIC_HOST:?Set PUBLIC_HOST in deploy/.env},127.0.0.1:3100"
-      WEB_ORIGIN: "${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN in deploy/.env}"
-      MCP_PUBLIC_URL: "${PUBLIC_ORIGIN}/mcp"
-      MCP_WEB_URL: "${PUBLIC_ORIGIN}"
-      MCP_ALLOWED_HOSTS: "${PUBLIC_HOST}"
-      MCP_ALLOWED_ORIGINS: "${PUBLIC_ORIGIN}"
-      MCP_ALLOW_LOOPBACK_HOSTS: "false"
-      NETWORK_ALLOW_HTTP: "${ALLOW_HTTP:-false}"
+      API_ALLOWED_HOSTS: worthpath.chyuovo.top,127.0.0.1:3100
+      WEB_ORIGIN: https://worthpath.chyuovo.top
+      MCP_PUBLIC_URL: https://worthpath.chyuovo.top/mcp
+      MCP_WEB_URL: https://worthpath.chyuovo.top
+      MCP_ALLOWED_HOSTS: worthpath.chyuovo.top
+      MCP_ALLOWED_ORIGINS: https://worthpath.chyuovo.top
+      NETWORK_ALLOW_HTTP: "false"
       NETWORK_ALLOW_HTTP_REDIRECTS: "false"
       NETWORK_ALLOW_WILDCARD_ORIGINS: "false"
-      NETWORK_REQUIRE_SECURE_COOKIE: "${COOKIE_SECURE:-true}"
-      COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+      NETWORK_REQUIRE_SECURE_COOKIE: "true"
+      COOKIE_SECURE: "true"
       COOKIE_SAME_SITE: strict
-      NETWORK_HSTS: "${COOKIE_SECURE:-true}"
+      NETWORK_HSTS: "true"
       ICON_STORAGE_DIR: /app/data/icons
-    # 由现有宿主机 Nginx 访问，默认不向局域网发布后端端口。
-    ports:
-      - "${BACKEND_BIND:-127.0.0.1}:${BACKEND_PORT:-3100}:3100"
-    volumes:
-      - backend-runtime:/app/runtime
-      - backend-icons:/app/data/icons
-      - backend-backups:/app/backups
-    init: true
+      WEB_DIST_DIR: /app/public
+    mem_limit: 768m
+    memswap_limit: 768m
+    cpus: "0.5"
     restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ${WORTHPATH_ICON_DIR:-/opt/docker/worthpath/data/icons}
+        target: /app/data/icons
+        bind:
+          create_host_path: false
+      - app-runtime:/app/runtime
+      - app-backups:/app/backups
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:3100:3100"
+    networks:
+      - worthpath
+    init: true
+    stop_grace_period: 30s
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     logging:
@@ -43,8 +55,11 @@ services:
         max-size: "10m"
         max-file: "3"
 
+networks:
+  worthpath:
+    external: true
+    name: worthpath
 
 volumes:
-  backend-runtime:
-  backend-icons:
-  backend-backups:
+  app-runtime:
+  app-backups:

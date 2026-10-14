@@ -1,68 +1,75 @@
-# 前端交给现有 Nginx，仅后端使用 Docker
+# 单镜像打包与部署
 
-需要 Node.js 22.12+、pnpm 11.19.0、Docker Engine 和 Compose v2+。MySQL 继续使用现有服务。
+一个 Python Slim 镜像内置前端 dist，FastAPI 在 3100 端口提供网页、API、MCP/OAuth。Node 仅在构建阶段使用；不再单独部署前端或让 Nginx 读取 dist。
 
-## 1. 配置
+## 1. 本地配置与打包（PowerShell）
 
 ```powershell
 cd E:\py_worthpath
-if (!(Test-Path deploy/.env)) { Copy-Item deploy/.env.example deploy/.env }
-if (!(Test-Path backend/.env.docker)) { Copy-Item backend/.env backend/.env.docker }
-notepad deploy/.env
+if (!(Test-Path backend/.env.docker)) { Copy-Item backend/docker.env.example backend/.env.docker }
 notepad backend/.env.docker
-```
-
-正式域名已设为 `https://worthpath.chyuovo.top`，MCP 地址为 `https://worthpath.chyuovo.top/mcp`。`deploy/.env` 与示例已填写对应的 PUBLIC_ORIGIN 和 PUBLIC_HOST；后端默认映射到宿主机 `127.0.0.1:3100`。已有配置若包含 WEB_BIND/WEB_PORT，请按示例改用 BACKEND_BIND/BACKEND_PORT。
-
-`backend/.env.docker` 沿用业务及 MySQL 凭据，将数据库主机改为容器可达地址：Windows 宿主机可用 `host.docker.internal`，NAS/独立 MySQL 填可达地址。两个真实环境文件都不进入 Git 或镜像。
-
-## 2. 构建与打包（PowerShell）
-
-```powershell
-pnpm --dir frontend install --frozen-lockfile
-pnpm --dir frontend build
-docker compose --env-file deploy/.env config --quiet
-docker compose --env-file deploy/.env build --pull
+docker compose config --quiet
+docker compose build --pull app
 New-Item -ItemType Directory -Force exports | Out-Null
-tar -czf exports/worthpath-frontend.tar.gz -C frontend dist
-docker save -o exports/worthpath-backend.tar py-worthpath-backend:0.1.0
+docker save -o exports/py-worthpath.tar py-worthpath:0.1.0
 ```
 
-只生成一个后端镜像；前端交付 dist 压缩包。后端不带 uv、开发依赖、测试或构建缓存。构建机与目标机器 CPU 架构应一致（amd64/arm64）。
+域名固定为 https://worthpath.chyuovo.top，MCP 为 https://worthpath.chyuovo.top/mcp。本地真实配置已保留原数据库凭据；模板中的占位值需要填写。构建机与服务器 CPU 架构应一致。
 
-## 3. 服务器 / NAS 上启动
+## 2. 沿用原项目的服务器设置
 
-安全传输两个包、`compose.yaml`、`deploy/nginx-worthpath.conf`、`deploy/.env`、`backend/.env.docker`，保持配置目录结构，按服务器地址调整环境变量。在目标项目目录运行：
+已只读核对 E:\WorthPath 的实际 compose.yaml：
+
+- 外部网络 worthpath；原文档为 172.30.50.0/24，网关 172.30.50.1，网桥 br-worthpath。新配置引用已有网络，不重建它。
+- host.docker.internal:host-gateway 访问宿主机 MySQL；业务库、账号和密码不自动更换。MySQL 必须监听容器可达接口，并保留原防火墙及账号来源授权。
+- 宿主机图标目录 /opt/docker/worthpath/data/icons；沿用 UID/GID 1000，不递归修改既有文件。
+- 端口 127.0.0.1:3100:3100；内存 768m、CPU 0.5、30 秒停止宽限及日志轮转。
+- 原服务器环境文件 /opt/docker/worthpath/.env.production 可继续使用，不覆盖其凭据。
+
+## 3. 服务器准备与启动（Linux）
+
+传输镜像包、compose.yaml 和 deploy/nginx-worthpath.conf 到目标项目目录。切换前由你停止旧应用，避免端口冲突及重复后台任务。
 
 ```sh
-mkdir -p /srv/worthpath
-tar -xzf worthpath-frontend.tar.gz -C /srv/worthpath
-docker load -i worthpath-backend.tar
-docker compose --env-file deploy/.env run --rm --no-deps backend python scripts/database.py check
-docker compose --env-file deploy/.env up -d --no-build
+export WORTHPATH_ENV_FILE=/opt/docker/worthpath/.env.production
+docker network inspect worthpath
+sudo install -d -m 750 -o 1000 -g 1000 /opt/docker/worthpath/data/icons
+docker load -i py-worthpath.tar
+docker compose config --quiet
+docker compose run --rm app python scripts/database.py check
+docker compose up -d --no-build app
+docker compose ps
 ```
 
-已有数据库不重复迁移；其他旧库接管或空库初始化见 [README](../README.md)，容器中用上述 run 前缀替代 uv run。切换前停止旧后端，避免重复后台任务。
+已有图标目录不需要重设权限。本地 backend/.env.docker 沿用迁移测试连接；正式部署使用上述原生产文件。若没有生产配置，从 backend/docker.env.example 创建新文件并填写正式数据库凭据，不用开发或测试配置覆盖生产。
 
-## 4. 接入现有 Nginx
+若网络不存在，先确认该子网未被占用，再按原规划创建一次：
 
-用 [nginx-worthpath.conf](../deploy/nginx-worthpath.conf) 替换现有 HTTPS 站点的 server_name/root/index/location 部分，保留 listen 和证书配置。目录为 `/srv/worthpath/dist`，后端为 `http://127.0.0.1:3100`；修改端口时同步调整这两处配置。
+```sh
+docker network create --driver bridge --subnet 172.30.50.0/24 --gateway 172.30.50.1 --opt com.docker.network.bridge.name=br-worthpath worthpath
+```
+
+已有库尚未接管 Alembic 时，先执行 `docker compose run --rm app python scripts/database.py adopt`；它先核对结构并备份，才标记明确基线。已接管的库不重复初始化；空库流程见 README。
+
+## 4. HTTPS 代理
+
+用 deploy/nginx-worthpath.conf 替换现有 HTTPS 站点的 root/alias/try_files/location 设置，保留证书和 listen；所有路径均代理到 127.0.0.1:3100。若已有 Nginx 本身是容器，接入 worthpath 网络并将上游改为 app:3100，保留外部 Host。
 
 ```sh
 nginx -t && nginx -s reload
 curl -f https://worthpath.chyuovo.top/api/health
+curl -I https://worthpath.chyuovo.top/
+docker compose logs --tail 100 app
 ```
 
-如果已有 Nginx 本身是容器：将 dist 挂载到其站点目录，代理地址改为可达的宿主机 IP，并将 BACKEND_BIND 改为该 IP；127.0.0.1 在 Nginx 容器内指向它自身。HTTP 验证时设 ALLOW_HTTP=true、COOKIE_SECURE=false，并同步修改 PUBLIC_ORIGIN/PUBLIC_HOST。
-
-## 5. 查看与更新
+## 5. 更新与停止
 
 ```sh
-docker compose --env-file deploy/.env ps
-docker compose --env-file deploy/.env logs --tail 100 -f
-docker image ls py-worthpath-backend
+docker load -i py-worthpath.tar
+docker compose up -d --no-build --force-recreate app
+docker compose stop app
 ```
 
-曾用双容器版本时，首次 up 增加 `--remove-orphans` 清理旧前端容器。更新前端只需重新构建并替换 dist；更新后端重新导入镜像后执行 up -d --no-build。停止用 compose down，不加 -v，保留数据卷。
+前后端更新都重新构建这一个镜像；不再传输独立 dist 包。不要加 down -v 删除数据卷，不自动执行旧 Prisma 工具，也不推送原项目镜像标签。
 
-本机 Docker 引擎未启动：已校验 Compose 和路由配置；容器构建、现有 Nginx 配置测试及端到端访问需在目标环境执行。
+本机 Docker 引擎未启动：Compose、前端构建及静态托管测试可本地验证；镜像构建、服务器网络/MySQL监听、目录权限和真实 HTTPS/MCP 仍需在目标环境核验。

@@ -461,3 +461,9 @@ async def routing_error(request, e):
         else e.detail
     )
     return JSONResponse({"message": message}, status)
+
+
+# 最后安装前端托管；API、MCP 和 OAuth 路由始终先匹配。
+from .web import install_web
+
+install_web(app)

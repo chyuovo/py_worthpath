@@ -45,3 +45,6 @@ Thumbs.db
 # 临时浏览器验收与测试报告
 playwright-report/
 test-results/
+
+# 单镜像本地验证时复制的前端构建产物
+backend/public/
