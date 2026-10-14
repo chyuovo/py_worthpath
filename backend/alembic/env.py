@@ -1,14 +1,14 @@
-# Alembic 是唯一结构执行入口；接管检查和备份由 scripts/database.py 完成。
-from alembic import context
+# Alembic 管理当前数据库版本；备份和结构检查由 scripts/database.py 提供。
 from sqlalchemy import (
-    MetaData,
-    Table,
     Column,
     ForeignKeyConstraint,
-    UniqueConstraint,
     Index,
-    text,
+    MetaData,
+    Table,
+    UniqueConstraint,
 )
+
+from alembic import context
 from app.database import engine
 from app.models import Base
 
@@ -75,7 +75,7 @@ def compare_defaults(
         return inspected_default is not None or rendered_default is not None
     left = str(inspected_default).strip().strip("'").strip('"')
     right = str(rendered_default).strip().strip("'").strip('"')
-    from sqlalchemy import Numeric, Integer, Boolean
+    from sqlalchemy import Boolean, Integer, Numeric
 
     if isinstance(metadata_column.type, (Numeric, Integer, Boolean)):
         from decimal import Decimal, InvalidOperation
@@ -90,8 +90,8 @@ def compare_defaults(
 
 
 def include_object(object, name, type, reflected, compare_to):
-    # 原 Prisma 历史仅保留审计用途，不能被 Alembic 自动生成为删除目标。
-    return not (type == "table" and name.lower() == "_prisma_migrations")
+    # 只比较当前模型管理的表，不自动删除其他表。删表须人工审查并明确执行。
+    return not (type == "table" and reflected and compare_to is None)
 
 
 if context.is_offline_mode():

@@ -1,52 +1,29 @@
-"""Read-only schema check; consistent logical backup; guarded baseline adoption."""
+"""当前模型结构检查、一致性备份与仅限空库的恢复工具。"""
 
-import argparse, gzip, hashlib, json, re, sys, runpy
-from pathlib import Path
+import argparse
+import gzip
+import hashlib
+import json
+import re
+import sys
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from sqlalchemy import inspect, text
-from app.database import engine
-from app.models import Base
+from sqlalchemy import inspect
+
 from app.config import ROOT
-
-REVISION = "0001_existing_schema"
-
-
-def normalize(ddl):
-    ddl = re.sub(r" AUTO_INCREMENT=\d+", "", ddl)
-    ddl = re.sub(
-        r"CREATE TABLE \x60[^\x60]+\x60",
-        "CREATE TABLE <TABLE>",
-        ddl,
-        count=1,
-        flags=re.I,
-    )
-    ddl = re.sub(
-        r"`([^`]+)`", lambda match: chr(96) + match.group(1).lower() + chr(96), ddl
-    )
-    return ddl.replace("\r", "").strip()
+from app.database import engine
 
 
-def check(connection):
-    names = {n.lower(): n for n in inspect(connection).get_table_names()}
-    baseline = runpy.run_path(str(ROOT / "alembic/baseline_schema.py"))["SCHEMA"]
-    differences = []
-    for name, ddl in baseline.items():
-        actual = names.get(name.lower())
-        if not actual:
-            differences.append(name + ": missing")
-            continue
-        current = connection.exec_driver_sql(
-            "SHOW CREATE TABLE " + connection.dialect.identifier_preparer.quote(actual)
-        ).one()[1]
-        if normalize(current) != normalize(ddl):
-            differences.append(name + ": schema differs")
-    if differences:
-        raise RuntimeError("; ".join(differences))
-    print(
-        "All 16 business schemas match the frozen baseline, including indexes, defaults and foreign keys."
-    )
+def check():
+    # 按当前模型和已执行的 Alembic 版本检查，不再对照旧项目冻结结构。
+    # command.check 只生成内存中的结构差异，不执行 DDL，也不写入版本号。
+    from alembic.config import Config
+
+    from alembic import command
+
+    command.check(Config(str(ROOT / "alembic.ini")))
 
 
 def backup():
@@ -120,19 +97,6 @@ def verify(path):
     )
 
 
-def adopt():
-    with engine.connect() as c:
-        check(c)
-    target = backup()
-    with engine.connect() as c:
-        check(c)
-    from alembic.config import Config
-    from alembic import command
-
-    command.stamp(Config(str(ROOT / "alembic.ini")), REVISION)
-    print("Stamped explicit baseline after verified backup:", target.name)
-
-
 # 恢复只允许空库，绝不 DROP、TRUNCATE 或覆盖现有业务表。
 def restore_empty(path):
     verify(path)
@@ -164,23 +128,18 @@ def restore_empty(path):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument(
-        "action", choices=["check", "backup", "adopt", "verify", "restore-empty"]
-    )
+    p.add_argument("action", choices=["check", "backup", "verify", "restore-empty"])
     p.add_argument("path", nargs="?")
     args = p.parse_args()
     try:
         if args.action == "check":
-            with engine.connect() as c:
-                check(c)
+            check()
         elif args.action == "backup":
-            backup()
+            print("Backup created:", backup().name)
         elif args.action == "verify":
             verify(Path(args.path))
         elif args.action == "restore-empty":
             restore_empty(Path(args.path))
-        else:
-            adopt()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- 错误信息脱敏，避免泄露数据库凭据。
         print("Database operation failed:", type(e).__name__)
         raise SystemExit(1)

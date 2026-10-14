@@ -1,13 +1,13 @@
 # py_worthpath
 
-WorthPath 后端已迁移为 Python FastAPI、SQLAlchemy 和 Alembic，继续使用原测试 MySQL。React 前端及资源保留。所有迁移内容均在本目录，源目录 E:\WorthPath 保持只读。
+WorthPath 使用 Python FastAPI、SQLAlchemy、Alembic 和 MySQL，前端使用 React。当前项目独立运行，不再提供旧项目数据库接管工具。
 
 ## 两个独立项目
 
 - `frontend/`：React 19、Vite 7，独立 package.json、pnpm-lock.yaml 和 .env。
 - `backend/`：FastAPI、SQLAlchemy 2、Alembic，独立 pyproject.toml、uv.lock 和 .env。
 - 两端只通过 HTTP 通信；前端不读取后端 .env，后端不需要 Node.js、pnpm 或前端源码。
-- `docs/MIGRATION.md`：页面、组件、68 个 HTTP 路由、16 个模型、历史迁移和集成清单。
+- `docs/DATABASE.md`：数据库维护及已停用表的手动清理说明。
 - Docker 打包与部署命令见 [docs/DOCKER.md](docs/DOCKER.md)，单镜像内置前端 dist，由 FastAPI 统一托管，宿主机 Nginx 只做 HTTPS 代理，MySQL 外置。
 
 已验证环境：Windows PowerShell，Python 3.14.7、Node.js 24.21.0、pnpm 11.19.0、MySQL 8.0.45。后端要求 Python 3.12+，前端要求 Node.js 22.12+。
@@ -24,7 +24,7 @@ if (!(Test-Path .env)) { Copy-Item .env.example .env }
 uv run python scripts/database.py check
 ```
 
-本次迁移已在 backend/.env 中保留原测试连接，未显示或提交凭据。新安装请自行填写真实测试 MySQL 连接及管理员配置；不要将示例占位值作为真实凭据。现有管理员、密码哈希、会话、项目 UUID 和历史均兼容。
+在后端 .env 配置实际 MySQL 连接与业务环境变量；不要使用示例占位凭据。已有账号不会被初始化逻辑覆盖。
 
 前端：
 
@@ -51,24 +51,6 @@ pnpm dev
 
 网页默认 http://localhost:5173，API 默认 http://localhost:3100/api，接口文档 http://localhost:3100/api/docs，MCP 默认 http://localhost:3100/mcp。端口、Host、Origin、Cookie、MCP_PUBLIC_URL 和 MCP_WEB_URL 沿用原配置。前端只需将自己的 WEB_API_PROXY 指向后端地址。
 
-验收曾使用 API 3101、迁移前端 5174、原前端只读副本 5175，避免与正常服务冲突。这些临时端口不是默认启动配置。
-
-## 已有 MySQL 如何接管
-
-本次已经完成接管到明确 revision `0001_existing_schema`，不要重复执行原 Prisma 工具。既有业务表没有结构修改，仅新增 Alembic 的版本表 `alembic_version`。
-
-在其他现有且结构匹配的数据库上接管：
-
-```powershell
-cd E:\py_worthpath\backend
-uv run python scripts/database.py check
-uv run python scripts/database.py adopt
-uv run alembic current
-uv run alembic check
-```
-
-adopt 先比对冻结的完整结构，再生成一致性备份、校验压缩内容和摘要及逐表条数，重新核对结构，最后只 stamp 到明确基线。结构不匹配或备份失败时停止。不要把未执行的 head 直接标记完成，不要对现有表运行基线建表。
-
 ## 空数据库初始化
 
 先由数据库管理员明确准备空 MySQL 数据库，并在本地 .env 填写该连接；程序不会自动创建、切换或删除数据库。
@@ -81,7 +63,7 @@ uv run python scripts/seed_icons.py
 uv run python scripts/run.py
 ```
 
-基线可创建全部 16 张业务表及索引、外键、中文注释和默认值。首次启动仅在不存在管理员时初始化，要求显式配置 ADMIN_USERNAME 和强 ADMIN_PASSWORD，并保留首次登录必须改密流程；不会回退到公开默认密码，也不会覆盖已有账号。空库实际建表和数据库整库恢复的验证边界见 docs/VALIDATION.md。
+历史基线保持不变；当前业务使用 15 张表，基线中已停用的 AgentPolicy 按 docs/DATABASE.md 手动清理。首次启动仅在不存在管理员时初始化，要求显式配置 ADMIN_USERNAME 和强 ADMIN_PASSWORD，并保留首次登录必须改密流程；不会回退到公开默认密码，也不会覆盖已有账号。空库实际建表和数据库整库恢复的验证边界见 docs/VALIDATION.md。
 
 ## 后续修改字段
 
@@ -95,7 +77,7 @@ uv run alembic upgrade head
 uv run alembic check
 ```
 
-Windows MySQL 的小写表名比较已处理；原 Prisma 迁移历史保留在库中作审计，Alembic 不会将它生成为删除目标。不可变基线位于 backend/alembic/baseline_schema.py，后续修改模型不会改变旧基线。
+Windows MySQL 的小写表名比较已处理。Alembic 只对当前模型管理的表生成差异，模型外的表不会自动生成删除操作；需要删表时必须人工审查。已执行的基线及 alembic_version 保留，不重新 stamp 或重复建表。
 
 ## 备份、恢复和故障处理
 
@@ -107,9 +89,9 @@ uv run python scripts/database.py verify .\backups\YOUR_BACKUP.sql.gz
 
 整库备份和对应清单只保存在忽略的 backend/backups 中，包含敏感数据，不提交 Git。验证会解压校验、核对摘要、CREATE 表数量和逐表 INSERT 数量。数据库恢复只面向明确准备的空库，避免覆盖既有业务数据；具体命令见后端 README。
 
-普通用户的数据迁移使用网页 ZIP v9 备份：上传预览、本人确认、事务追加，保留原有项目，不覆盖历史；图标恢复为私有。清空数据必须先下载当前备份且账目指纹仍一致。密码、会话和令牌不进入网页备份。
+普通用户的数据备份与导入使用网页 ZIP v9：上传预览、本人确认、事务追加，保留原有项目，不覆盖历史；图标恢复为私有。清空数据必须先下载当前备份且账目指纹仍一致。密码、会话和令牌不进入网页备份。
 
-连接失败时检查 MySQL 服务及原隧道、.env、网络白名单和端口，不创建替代数据库。出现状态冲突时重新读取，不修改旧请求的幂等参数。恢复、迁移或自动生成结果不明确时先停止结构写入，保留备份。
+连接失败时检查 MySQL 服务及网络连接、.env、网络白名单和端口，不创建替代数据库。出现状态冲突时重新读取，不修改旧请求的幂等参数。恢复、迁移或自动生成结果不明确时先停止结构写入，保留备份。
 
 ## 测试
 

@@ -1,10 +1,11 @@
 """Frozen baseline: existing WorthPath schema with no business schema changes."""
 
-from pathlib import Path
-import json
 import runpy
-from alembic import op, context
+from pathlib import Path
+
 from sqlalchemy import inspect, text
+
+from alembic import context, op
 
 revision = "0001_existing_schema"
 down_revision = None
@@ -22,7 +23,9 @@ def upgrade():
         set() if offline else {n.lower() for n in inspect(connection).get_table_names()}
     )
     if present.intersection(n.lower() for n in schema):
-        raise RuntimeError("Existing tables: use verified adoption instead of upgrade.")
+        raise RuntimeError(
+            "Baseline initialization requires an empty database; do not recreate existing tables."
+        )
 
     def execute(sql):
         if offline:

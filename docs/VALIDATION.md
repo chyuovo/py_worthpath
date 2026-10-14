@@ -84,3 +84,7 @@ ORM 与真实结构已匹配字段、类型、精度、默认值、索引、外�
 - 已推送 git.chyuovo.top/chyuovo/py_worthpath:latest，远端摘要与本地一致：sha256:702d35bafd41ca0b918388225fa29250db0a491b51676efb8158feeed61e7e2f。压缩镜像层及配置共 66233906 字节（约 63.2 MiB），本地镜像 278585596 字节（约 265.7 MiB）。
 - Compose 只启动上传的镜像，环境文件及图标、运行目录、备份目录全部使用 /opt/docker/py_worthpath/ 下绝对路径；保留 worthpath 外部网络和 host-gateway。已通过不解析真实环境文件的 Compose 配置检查。
 - 未部署服务器或 Git push，生产 MySQL、HTTPS/MCP 联通性仍需服务器验证。
+
+## 旧项目支持清理（2026-10-14）
+
+旧库接管工具和旧模型参考已删除，当前模型为 15 张业务表。AgentPolicy 和 _prisma_migrations 不再参与运行或结构比对，留待用户备份后手动删除；alembic_version 和已执行的基线保留。此前关于保留旧迁移历史的记录属于当时验收状态，当前维护说明以 DATABASE.md 为准。

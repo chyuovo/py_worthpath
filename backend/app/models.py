@@ -1,29 +1,30 @@
 # SQLAlchemy 模型：保留原表名、字段名、精度、默认值、索引和外键行为。
 """SQLAlchemy mappings preserving existing MySQL names and precision."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import ClassVar
 from uuid import uuid4
+
 from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    Boolean,
     JSON,
+    Boolean,
+    Column,
     Date,
+    FetchedValue,
     ForeignKey,
     Index,
+    Integer,
     UniqueConstraint,
-    FetchedValue,
     text,
 )
-from sqlalchemy.dialects.mysql import CHAR, VARCHAR, DECIMAL, DATETIME, MEDIUMBLOB, TEXT
+from sqlalchemy.dialects.mysql import CHAR, DATETIME, DECIMAL, MEDIUMBLOB, TEXT, VARCHAR
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
 
 def utcnow():
-    value = datetime.now(timezone.utc).replace(tzinfo=None)
+    value = datetime.now(UTC).replace(tzinfo=None)
     return value.replace(microsecond=value.microsecond // 1000 * 1000)
 
 
@@ -185,30 +186,9 @@ class AgentCall(Base):
     )
 
 
-class AgentPolicy(Base):
-    __tablename__ = "AgentPolicy"
-    __table_args__ = {
-        "comment": "已停用的历史 Agent 策略数据，保留原数据但不参与权限判定"
-    }
-    userId = Column(
-        CHAR(36, collation="utf8mb4_unicode_ci"),
-        ForeignKey("User.id", ondelete="CASCADE", onupdate="CASCADE"),
-        primary_key=True,
-        nullable=False,
-        comment="所属用户标识，用于数据隔离",
-    )
-    mode = Column(
-        VARCHAR(16, collation="utf8mb4_unicode_ci"),
-        nullable=False,
-        default="draft",
-        server_default=text("'draft'"),
-        comment="写入策略：readonly 只读、draft 草稿、direct 普通直接写入",
-    )
-
-
 class AgentClient(Base):
     __tablename__ = "AgentClient"
-    __table_args__ = {"comment": "OAuth 动态注册客户端元数据"}
+    __table_args__: ClassVar[dict] = {"comment": "OAuth 动态注册客户端元数据"}
     id = Column(
         CHAR(36, collation="utf8mb4_unicode_ci"),
         primary_key=True,

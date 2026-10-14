@@ -1,16 +1,16 @@
 # 后端
 
-本目录为独立 FastAPI 项目，不依赖前端、Node.js、pnpm 或原 NestJS 项目。
+本目录为独立 FastAPI 项目，不依赖前端、Node.js、pnpm 。
 
 ```powershell
 cd E:\py_worthpath\backend
 uv sync --frozen
-# 已迁移的本地 .env 不要覆盖
+# 本地 .env 不要覆盖
 uv run python scripts/database.py check
 uv run python scripts/run.py
 ```
 
-默认端口 3100，OpenAPI 文档位于 /api/docs，MCP 位于 /mcp。环境配置由本目录 .env 读取。安装、数据库接管、空库初始化和后续迁移步骤见上级 README。
+默认端口 3100，OpenAPI 文档位于 /api/docs，MCP 位于 /mcp。环境配置由本目录 .env 读取。安装、空库初始化和后续字段变更步骤见上级 README。已停用表的手动清理见 ../docs/DATABASE.md。
 
 目录：app 为 HTTP、认证、业务服务和 MCP/OAuth；alembic 为唯一结构迁移工具；assets 为内置图标；scripts 为启动、数据库备份与图标初始化；tests 为必要的真实 MySQL 回归。金额使用 Decimal，数据库保留 UTC，业务日期使用 UTC+8。
 
@@ -22,7 +22,6 @@ uv run python scripts/run.py
 uv run python scripts/database.py verify .\backups\YOUR_BACKUP.sql.gz
 uv run python scripts/database.py restore-empty .\backups\YOUR_BACKUP.sql.gz
 uv run python scripts/database.py check
-uv run python scripts/database.py adopt
 ```
 
 失败时保留现场及原备份，不自动删表。恢复到不同操作系统的 MySQL 前，需人工核对 lower_case_table_names 及原备份表名大小写策略。
