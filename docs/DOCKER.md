@@ -1,8 +1,8 @@
-# Docker 打包与部署
+# 前端交给现有 Nginx，仅后端使用 Docker
 
-前端 Nginx、后端 Python Slim 两个独立镜像，连接现有 MySQL。需要 Docker Engine 和 Compose v2+；以下构建命令在 PowerShell 中执行。
+需要 Node.js 22.12+、pnpm 11.19.0、Docker Engine 和 Compose v2+。MySQL 继续使用现有服务。
 
-## 1. 准备配置
+## 1. 配置
 
 ```powershell
 cd E:\py_worthpath
@@ -12,57 +12,57 @@ notepad deploy/.env
 notepad backend/.env.docker
 ```
 
-- `deploy/.env`：填写实际的 `PUBLIC_ORIGIN` 和 `PUBLIC_HOST`。默认通过已有 HTTPS 反向代理转发整个站点到 `127.0.0.1:8080`，保留 Host 和 X-Forwarded-Proto；外层 MCP 代理关闭缓冲。
-- `backend/.env.docker`：沿用业务配置和 MySQL 凭据，只把数据库主机改为容器可访问的地址。容器中的 localhost 是容器自身；Windows 宿主机 MySQL 可用 `host.docker.internal`，NAS/独立数据库使用其可达地址。不修改原 `backend/.env`。
-- 局域网 HTTP 验证：例如地址 `http://NAS_IP:8080`、Host `NAS_IP:8080`，同时设 `WEB_BIND=0.0.0.0`、`ALLOW_HTTP=true`、`COOKIE_SECURE=false`。远程反代访问时也需调整 WEB_BIND。
-- 两个真实环境文件只在本地保存，不放进镜像或 Git。
+`deploy/.env` 填实际的 PUBLIC_ORIGIN 和 PUBLIC_HOST；后端默认映射到宿主机 `127.0.0.1:3100`。已有配置若包含 WEB_BIND/WEB_PORT，请按示例改用 BACKEND_BIND/BACKEND_PORT。
 
-## 2. 构建镜像
+`backend/.env.docker` 沿用业务及 MySQL 凭据，将数据库主机改为容器可达地址：Windows 宿主机可用 `host.docker.internal`，NAS/独立 MySQL 填可达地址。两个真实环境文件都不进入 Git 或镜像。
+
+## 2. 构建与打包（PowerShell）
 
 ```powershell
+pnpm --dir frontend install --frozen-lockfile
+pnpm --dir frontend build
 docker compose --env-file deploy/.env config --quiet
 docker compose --env-file deploy/.env build --pull
-docker image ls py-worthpath-backend
-docker image ls py-worthpath-frontend
-```
-
-只安装生产依赖，运行镜像不带 Node 构建工具、uv、测试、缓存或本地虚拟环境。基础镜像已固定版本和摘要。
-
-## 3. 数据库检查与启动
-
-```powershell
-docker compose --env-file deploy/.env run --rm --no-deps backend python scripts/database.py check
-docker compose --env-file deploy/.env up -d
-docker compose --env-file deploy/.env ps
-```
-
-本次已接管的数据库不重复迁移。其他旧库接管和空库初始化见 [README](../README.md)；容器中用 `docker compose --env-file deploy/.env run --rm --no-deps backend` 替代 `uv run`。切换前由你停止旧后端，避免两套后台任务同时写库。
-
-## 4. 打包给 NAS / 服务器
-
-```powershell
 New-Item -ItemType Directory -Force exports | Out-Null
-docker save -o exports/worthpath-images.tar py-worthpath-backend:0.1.0 py-worthpath-frontend:0.1.0
+tar -czf exports/worthpath-frontend.tar.gz -C frontend dist
+docker save -o exports/worthpath-backend.tar py-worthpath-backend:0.1.0
 ```
 
-将镜像包、`compose.yaml`、`deploy/.env`、`backend/.env.docker` 安全传到目标机器，保持目录结构，按目标地址调整配置。构建机和目标机 CPU 架构应一致（amd64/arm64）。
+只生成一个后端镜像；前端交付 dist 压缩包。后端不带 uv、开发依赖、测试或构建缓存。构建机与目标机器 CPU 架构应一致（amd64/arm64）。
 
-在目标机器的项目目录执行：
+## 3. 服务器 / NAS 上启动
+
+安全传输两个包、`compose.yaml`、`deploy/nginx-worthpath.conf`、`deploy/.env`、`backend/.env.docker`，保持配置目录结构，按服务器地址调整环境变量。在目标项目目录运行：
 
 ```sh
-docker load -i worthpath-images.tar
+mkdir -p /srv/worthpath
+tar -xzf worthpath-frontend.tar.gz -C /srv/worthpath
+docker load -i worthpath-backend.tar
+docker compose --env-file deploy/.env run --rm --no-deps backend python scripts/database.py check
 docker compose --env-file deploy/.env up -d --no-build
+```
+
+已有数据库不重复迁移；其他旧库接管或空库初始化见 [README](../README.md)，容器中用上述 run 前缀替代 uv run。切换前停止旧后端，避免重复后台任务。
+
+## 4. 接入现有 Nginx
+
+用 [nginx-worthpath.conf](../deploy/nginx-worthpath.conf) 替换现有 HTTPS 站点的 root/index/location 部分，保留 listen、server_name 和证书配置。目录为 `/srv/worthpath/dist`，后端为 `http://127.0.0.1:3100`；修改端口时同步调整这两处配置。
+
+```sh
+nginx -t && nginx -s reload
+curl -f https://你的域名/api/health
+```
+
+如果已有 Nginx 本身是容器：将 dist 挂载到其站点目录，代理地址改为可达的宿主机 IP，并将 BACKEND_BIND 改为该 IP；127.0.0.1 在 Nginx 容器内指向它自身。HTTP 验证时设 ALLOW_HTTP=true、COOKIE_SECURE=false，并同步修改 PUBLIC_ORIGIN/PUBLIC_HOST。
+
+## 5. 查看与更新
+
+```sh
 docker compose --env-file deploy/.env ps
-```
-
-## 5. 日常维护
-
-```powershell
 docker compose --env-file deploy/.env logs --tail 100 -f
-docker system df -v
-docker compose --env-file deploy/.env down
+docker image ls py-worthpath-backend
 ```
 
-更新时重新构建或导入镜像，再执行 `up -d --no-build`。停止时不要加 `-v`，以保留图标、临时运行目录和备份卷；业务数据始终在外部 MySQL。
+曾用双容器版本时，首次 up 增加 `--remove-orphans` 清理旧前端容器。更新前端只需重新构建并替换 dist；更新后端重新导入镜像后执行 up -d --no-build。停止用 compose down，不加 -v，保留数据卷。
 
-本机 Docker 引擎未运行：已核实基础镜像仓库及配置，实际构建、启动和最终镜像体积需在引擎启动后验证。
+本机 Docker 引擎未启动：已校验 Compose 和路由配置；容器构建、现有 Nginx 配置测试及端到端访问需在目标环境执行。
