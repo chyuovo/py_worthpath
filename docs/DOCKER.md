@@ -12,7 +12,7 @@ notepad deploy/.env
 notepad backend/.env.docker
 ```
 
-`deploy/.env` 填实际的 PUBLIC_ORIGIN 和 PUBLIC_HOST；后端默认映射到宿主机 `127.0.0.1:3100`。已有配置若包含 WEB_BIND/WEB_PORT，请按示例改用 BACKEND_BIND/BACKEND_PORT。
+正式域名已设为 `https://worthpath.chyuovo.top`，MCP 地址为 `https://worthpath.chyuovo.top/mcp`。`deploy/.env` 与示例已填写对应的 PUBLIC_ORIGIN 和 PUBLIC_HOST；后端默认映射到宿主机 `127.0.0.1:3100`。已有配置若包含 WEB_BIND/WEB_PORT，请按示例改用 BACKEND_BIND/BACKEND_PORT。
 
 `backend/.env.docker` 沿用业务及 MySQL 凭据，将数据库主机改为容器可达地址：Windows 宿主机可用 `host.docker.internal`，NAS/独立 MySQL 填可达地址。两个真实环境文件都不进入 Git 或镜像。
 
@@ -46,11 +46,11 @@ docker compose --env-file deploy/.env up -d --no-build
 
 ## 4. 接入现有 Nginx
 
-用 [nginx-worthpath.conf](../deploy/nginx-worthpath.conf) 替换现有 HTTPS 站点的 root/index/location 部分，保留 listen、server_name 和证书配置。目录为 `/srv/worthpath/dist`，后端为 `http://127.0.0.1:3100`；修改端口时同步调整这两处配置。
+用 [nginx-worthpath.conf](../deploy/nginx-worthpath.conf) 替换现有 HTTPS 站点的 server_name/root/index/location 部分，保留 listen 和证书配置。目录为 `/srv/worthpath/dist`，后端为 `http://127.0.0.1:3100`；修改端口时同步调整这两处配置。
 
 ```sh
 nginx -t && nginx -s reload
-curl -f https://你的域名/api/health
+curl -f https://worthpath.chyuovo.top/api/health
 ```
 
 如果已有 Nginx 本身是容器：将 dist 挂载到其站点目录，代理地址改为可达的宿主机 IP，并将 BACKEND_BIND 改为该 IP；127.0.0.1 在 Nginx 容器内指向它自身。HTTP 验证时设 ALLOW_HTTP=true、COOKIE_SECURE=false，并同步修改 PUBLIC_ORIGIN/PUBLIC_HOST。
