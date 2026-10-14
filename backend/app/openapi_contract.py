@@ -1,1126 +1,2092 @@
 # HTTP 契约：与原控制器路径、会话认证及 Zod 请求定义保持一致。
-DOCUMENT = {'openapi': '3.0.0',
- 'info': {'title': 'WorthPath API',
-          'description': '个人资产管理接口。金额使用十进制字符串；登录会话由 HttpOnly Cookie 传递，数据归属由服务端验证。',
-          'version': '1.1',
-          'contact': {}},
- 'tags': [],
- 'servers': [],
- 'components': {'securitySchemes': {'session': {'type': 'apiKey', 'in': 'cookie', 'name': 'wp_session'}}},
- 'security': [{'session': []}],
- 'paths': {'/api/admin/users': {'get': {'responses': {'200': {'description': 'Success'},
-                                                      '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                      '401': {'description': '未登录或会话失效'},
-                                                      '403': {'description': '请求来源或访问权限不受信任'},
-                                                      '409': {'description': '数据冲突或业务记录不可修改'}},
-                                        'summary': 'GET /api/admin/users'},
-                                'post': {'responses': {'201': {'description': 'Success'},
-                                                       '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                              '}'},
-                                                       '401': {'description': '未登录或会话失效'},
-                                                       '403': {'description': '请求来源或访问权限不受信任'},
-                                                       '409': {'description': '数据冲突或业务记录不可修改'}},
-                                         'summary': 'POST /api/admin/users',
-                                         'requestBody': {'required': True,
-                                                         'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                     'properties': {'username': {'type': 'string',
-                                                                                                                                 'minLength': 3,
-                                                                                                                                 'maxLength': 64,
-                                                                                                                                 'pattern': '^[\\p{L}\\p{N}_@.\\-]+$'},
-                                                                                                                    'password': {'type': 'string',
-                                                                                                                                 'minLength': 10,
-                                                                                                                                 'maxLength': 72},
-                                                                                                                    'role': {'default': 'user',
-                                                                                                                             'type': 'string',
-                                                                                                                             'enum': ['admin',
-                                                                                                                                      'user',
-                                                                                                                                      'readonly']}},
-                                                                                                     'required': ['username',
-                                                                                                                  'password',
-                                                                                                                  'role'],
-                                                                                                     'additionalProperties': False}}}}}},
-           '/api/admin/users/{id}': {'patch': {'responses': {'200': {'description': 'Success'},
-                                                             '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                    'message }'},
-                                                             '401': {'description': '未登录或会话失效'},
-                                                             '403': {'description': '请求来源或访问权限不受信任'},
-                                                             '409': {'description': '数据冲突或业务记录不可修改'}},
-                                               'summary': 'PATCH /api/admin/users/{id}',
-                                               'requestBody': {'required': True,
-                                                               'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                           'properties': {'role': {'type': 'string',
-                                                                                                                                   'enum': ['admin',
-                                                                                                                                            'user',
-                                                                                                                                            'readonly']},
-                                                                                                                          'banned': {'type': 'boolean'}},
-                                                                                                           'additionalProperties': False}}}}},
-                                     'delete': {'responses': {'200': {'description': 'Success'},
-                                                              '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                     'message }'},
-                                                              '401': {'description': '未登录或会话失效'},
-                                                              '403': {'description': '请求来源或访问权限不受信任'},
-                                                              '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                'summary': 'DELETE /api/admin/users/{id}',
-                                                'requestBody': {'required': True,
-                                                                'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                            'properties': {'confirmationUsername': {'type': 'string',
-                                                                                                                                                    'minLength': 3,
-                                                                                                                                                    'maxLength': 64,
-                                                                                                                                                    'pattern': '^[\\p{L}\\p{N}_@.\\-]+$'},
-                                                                                                                           'currentPassword': {'type': 'string',
-                                                                                                                                               'minLength': 1,
-                                                                                                                                               'maxLength': 72}},
-                                                                                                            'required': ['confirmationUsername',
-                                                                                                                         'currentPassword'],
-                                                                                                            'additionalProperties': False}}}}}},
-           '/api/health': {'get': {'responses': {'200': {'description': 'Success'},
-                                                 '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                 '401': {'description': '未登录或会话失效'},
-                                                 '403': {'description': '请求来源或访问权限不受信任'},
-                                                 '409': {'description': '数据冲突或业务记录不可修改'}},
-                                   'summary': 'GET /api/health',
-                                   'security': []}},
-           '/api/auth/register': {'post': {'responses': {'201': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'POST /api/auth/register',
-                                           'security': []}},
-           '/api/auth/login': {'post': {'responses': {'201': {'description': 'Success'},
-                                                      '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                      '401': {'description': '未登录或会话失效'},
-                                                      '403': {'description': '请求来源或访问权限不受信任'},
-                                                      '409': {'description': '数据冲突或业务记录不可修改'}},
-                                        'summary': 'POST /api/auth/login',
-                                        'security': [],
-                                        'requestBody': {'required': True,
-                                                        'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                    'properties': {'username': {'type': 'string',
-                                                                                                                                'minLength': 3,
-                                                                                                                                'maxLength': 64,
-                                                                                                                                'pattern': '^[\\p{L}\\p{N}_@.\\-]+$'},
-                                                                                                                   'password': {'type': 'string',
-                                                                                                                                'minLength': 1,
-                                                                                                                                'maxLength': 72}},
-                                                                                                    'required': ['username',
-                                                                                                                 'password'],
-                                                                                                    'additionalProperties': False}}}}}},
-           '/api/auth/me': {'get': {'responses': {'200': {'description': 'Success'},
-                                                  '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                  '401': {'description': '未登录或会话失效'},
-                                                  '403': {'description': '请求来源或访问权限不受信任'},
-                                                  '409': {'description': '数据冲突或业务记录不可修改'}},
-                                    'summary': 'GET /api/auth/me'}},
-           '/api/auth/credentials': {'patch': {'responses': {'200': {'description': 'Success'},
-                                                             '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                    'message }'},
-                                                             '401': {'description': '未登录或会话失效'},
-                                                             '403': {'description': '请求来源或访问权限不受信任'},
-                                                             '409': {'description': '数据冲突或业务记录不可修改'}},
-                                               'summary': 'PATCH /api/auth/credentials',
-                                               'requestBody': {'required': True,
-                                                               'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                           'properties': {'currentPassword': {'type': 'string',
-                                                                                                                                              'minLength': 1,
-                                                                                                                                              'maxLength': 72},
-                                                                                                                          'username': {'type': 'string',
-                                                                                                                                       'minLength': 3,
-                                                                                                                                       'maxLength': 64,
-                                                                                                                                       'pattern': '^[\\p{L}\\p{N}_@.\\-]+$'},
-                                                                                                                          'newPassword': {'type': 'string',
-                                                                                                                                          'minLength': 10,
-                                                                                                                                          'maxLength': 72}},
-                                                                                                           'required': ['currentPassword'],
-                                                                                                           'additionalProperties': False}}}}}},
-           '/api/auth/activity': {'post': {'responses': {'201': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'POST /api/auth/activity'}},
-           '/api/auth/reveal': {'post': {'responses': {'201': {'description': 'Success'},
-                                                       '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                              '}'},
-                                                       '401': {'description': '未登录或会话失效'},
-                                                       '403': {'description': '请求来源或访问权限不受信任'},
-                                                       '409': {'description': '数据冲突或业务记录不可修改'}},
-                                         'summary': 'POST /api/auth/reveal',
-                                         'requestBody': {'required': True,
-                                                         'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                     'properties': {'password': {'type': 'string',
-                                                                                                                                 'minLength': 10,
-                                                                                                                                 'maxLength': 72}},
-                                                                                                     'additionalProperties': False}}}}}},
-           '/api/auth/lock': {'post': {'responses': {'201': {'description': 'Success'},
-                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                     '401': {'description': '未登录或会话失效'},
-                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                       'summary': 'POST /api/auth/lock'}},
-           '/api/auth/logout': {'post': {'responses': {'201': {'description': 'Success'},
-                                                       '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                              '}'},
-                                                       '401': {'description': '未登录或会话失效'},
-                                                       '403': {'description': '请求来源或访问权限不受信任'},
-                                                       '409': {'description': '数据冲突或业务记录不可修改'}},
-                                         'summary': 'POST /api/auth/logout'}},
-           '/api/backup': {'get': {'responses': {'200': {'description': '该用户全部数据的 ZIP 文件',
-                                                         'content': {'application/zip': {'schema': {'type': 'string',
-                                                                                                    'format': 'binary'}}}},
-                                                 '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                 '401': {'description': '未登录或会话失效'},
-                                                 '403': {'description': '请求来源或访问权限不受信任'},
-                                                 '409': {'description': '数据冲突或业务记录不可修改'}},
-                                   'summary': 'GET /api/backup'}},
-           '/api/backup/upload': {'post': {'responses': {'201': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'POST /api/backup/upload',
-                                           'requestBody': {'required': True,
-                                                           'content': {'multipart/form-data': {'schema': {'type': 'object',
-                                                                                                          'required': ['file'],
-                                                                                                          'properties': {'file': {'type': 'string',
-                                                                                                                                  'format': 'binary'}}}}}}}},
-           '/api/backup/import-file': {'post': {'responses': {'201': {'description': 'Success'},
-                                                              '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                     'message }'},
-                                                              '401': {'description': '未登录或会话失效'},
-                                                              '403': {'description': '请求来源或访问权限不受信任'},
-                                                              '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                'summary': 'POST /api/backup/import-file',
-                                                'requestBody': {'required': True,
-                                                                'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                            'properties': {'token': {'type': 'string',
-                                                                                                                                     'format': 'uuid',
-                                                                                                                                     'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                           'confirmed': {'type': 'boolean',
-                                                                                                                                         'enum': [True]}},
-                                                                                                            'required': ['token',
-                                                                                                                         'confirmed'],
-                                                                                                            'additionalProperties': False}}}}}},
-           '/api/backup/clear-status': {'get': {'responses': {'200': {'description': 'Success'},
-                                                              '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                     'message }'},
-                                                              '401': {'description': '未登录或会话失效'},
-                                                              '403': {'description': '请求来源或访问权限不受信任'},
-                                                              '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                'summary': 'GET /api/backup/clear-status'}},
-           '/api/backup/clear': {'post': {'responses': {'201': {'description': 'Success'},
-                                                        '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                               '}'},
-                                                        '401': {'description': '未登录或会话失效'},
-                                                        '403': {'description': '请求来源或访问权限不受信任'},
-                                                        '409': {'description': '数据冲突或业务记录不可修改'}},
-                                          'summary': 'POST /api/backup/clear',
-                                          'requestBody': {'required': True,
-                                                          'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                      'properties': {'confirmation': {'type': 'string',
-                                                                                                                                      'enum': ['确定清空']}},
-                                                                                                      'required': ['confirmation'],
-                                                                                                      'additionalProperties': False}}}}}},
-           '/api/calendar': {'get': {'responses': {'200': {'description': 'Success'},
-                                                   '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                   '401': {'description': '未登录或会话失效'},
-                                                   '403': {'description': '请求来源或访问权限不受信任'},
-                                                   '409': {'description': '数据冲突或业务记录不可修改'}},
-                                     'summary': 'GET /api/calendar'}},
-           '/api/calendar/day': {'get': {'responses': {'200': {'description': 'Success'},
-                                                       '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                              '}'},
-                                                       '401': {'description': '未登录或会话失效'},
-                                                       '403': {'description': '请求来源或访问权限不受信任'},
-                                                       '409': {'description': '数据冲突或业务记录不可修改'}},
-                                         'summary': 'GET /api/calendar/day'}},
-           '/api/icons': {'get': {'responses': {'200': {'description': 'Success'},
-                                                '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                '401': {'description': '未登录或会话失效'},
-                                                '403': {'description': '请求来源或访问权限不受信任'},
-                                                '409': {'description': '数据冲突或业务记录不可修改'}},
-                                  'summary': 'GET /api/icons'}},
-           '/api/icons/{id}/image': {'get': {'responses': {'200': {'description': 'Success'},
-                                                           '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                  'message }'},
-                                                           '401': {'description': '未登录或会话失效'},
-                                                           '403': {'description': '请求来源或访问权限不受信任'},
-                                                           '409': {'description': '数据冲突或业务记录不可修改'}},
-                                             'summary': 'GET /api/icons/{id}/image'}},
-           '/api/icons/upload': {'post': {'responses': {'201': {'description': 'Success'},
-                                                        '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                               '}'},
-                                                        '401': {'description': '未登录或会话失效'},
-                                                        '403': {'description': '请求来源或访问权限不受信任'},
-                                                        '409': {'description': '数据冲突或业务记录不可修改'}},
-                                          'summary': 'POST /api/icons/upload',
-                                          'requestBody': {'required': True,
-                                                          'content': {'multipart/form-data': {'schema': {'type': 'object',
-                                                                                                         'required': ['file',
-                                                                                                                      'name'],
-                                                                                                         'properties': {'file': {'type': 'string',
-                                                                                                                                 'format': 'binary'},
-                                                                                                                        'name': {'type': 'string',
-                                                                                                                                 'description': '共享图标必须包含中文'},
-                                                                                                                        'shared': {'type': 'string',
-                                                                                                                                   'enum': ['false',
-                                                                                                                                            'true'],
-                                                                                                                                   'default': 'false'},
-                                                                                                                        'confirmed': {'type': 'string',
-                                                                                                                                      'enum': ['true'],
-                                                                                                                                      'description': '共享发布必须确认'}}}}}}}},
-           '/api/metals': {'get': {'responses': {'200': {'description': 'Success'},
-                                                 '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                 '401': {'description': '未登录或会话失效'},
-                                                 '403': {'description': '请求来源或访问权限不受信任'},
-                                                 '409': {'description': '数据冲突或业务记录不可修改'}},
-                                   'summary': 'GET /api/metals'}},
-           '/api/metals/holdings': {'post': {'responses': {'201': {'description': 'Success'},
-                                                           '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                  'message }'},
-                                                           '401': {'description': '未登录或会话失效'},
-                                                           '403': {'description': '请求来源或访问权限不受信任'},
-                                                           '409': {'description': '数据冲突或业务记录不可修改'}},
-                                             'summary': 'POST /api/metals/holdings',
-                                             'requestBody': {'required': True,
-                                                             'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                         'properties': {'metalType': {'type': 'string',
-                                                                                                                                      'enum': ['gold',
-                                                                                                                                               'silver']},
-                                                                                                                        'metalGrams': {'type': 'string',
-                                                                                                                                       'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                        'metalCostPerGram': {'description': '每克实物买入成本，原币十进制字符串；null '
-                                                                                                                                                            '清除成本，省略保留',
-                                                                                                                                             'nullable': True,
-                                                                                                                                             'type': 'string',
-                                                                                                                                             'pattern': '^(0|[1-9]\\d{0,11})(\\.\\d{1,12})?$'},
-                                                                                                                        'autoValuation': {'type': 'boolean'},
-                                                                                                                        'name': {'type': 'string',
-                                                                                                                                 'minLength': 1,
-                                                                                                                                 'maxLength': 100},
-                                                                                                                        'currency': {'type': 'string',
-                                                                                                                                     'enum': ['CNY',
-                                                                                                                                              'USD',
-                                                                                                                                              'HKD',
-                                                                                                                                              'EUR',
-                                                                                                                                              'GBP',
-                                                                                                                                              'JPY',
-                                                                                                                                              'AUD',
-                                                                                                                                              'CAD',
-                                                                                                                                              'CHF',
-                                                                                                                                              'SGD']},
-                                                                                                                        'notes': {'default': '',
-                                                                                                                                  'type': 'string',
-                                                                                                                                  'maxLength': 2000},
-                                                                                                                        'hidden': {'default': False,
-                                                                                                                                   'type': 'boolean'},
-                                                                                                                        'included': {'default': True,
-                                                                                                                                     'type': 'boolean'},
-                                                                                                                        'date': {'type': 'string'}},
-                                                                                                         'required': ['metalType',
-                                                                                                                      'metalGrams',
-                                                                                                                      'autoValuation',
-                                                                                                                      'name',
-                                                                                                                      'currency',
-                                                                                                                      'notes',
-                                                                                                                      'hidden',
-                                                                                                                      'included',
-                                                                                                                      'date'],
-                                                                                                         'additionalProperties': False}}}}}},
-           '/api/metals/refresh': {'post': {'responses': {'201': {'description': 'Success'},
-                                                          '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                 'message }'},
-                                                          '401': {'description': '未登录或会话失效'},
-                                                          '403': {'description': '请求来源或访问权限不受信任'},
-                                                          '409': {'description': '数据冲突或业务记录不可修改'}},
-                                            'summary': 'POST /api/metals/refresh'}},
-           '/api/metals/{id}': {'put': {'responses': {'200': {'description': 'Success'},
-                                                      '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                      '401': {'description': '未登录或会话失效'},
-                                                      '403': {'description': '请求来源或访问权限不受信任'},
-                                                      '409': {'description': '数据冲突或业务记录不可修改'}},
-                                        'summary': 'PUT /api/metals/{id}',
-                                        'requestBody': {'required': True,
-                                                        'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                    'properties': {'metalType': {'type': 'string',
-                                                                                                                                 'enum': ['gold',
-                                                                                                                                          'silver']},
-                                                                                                                   'metalGrams': {'type': 'string',
-                                                                                                                                  'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                   'metalCostPerGram': {'description': '每克实物买入成本，原币十进制字符串；null '
-                                                                                                                                                       '清除成本，省略保留',
-                                                                                                                                        'nullable': True,
-                                                                                                                                        'type': 'string',
-                                                                                                                                        'pattern': '^(0|[1-9]\\d{0,11})(\\.\\d{1,12})?$'},
-                                                                                                                   'autoValuation': {'type': 'boolean'}},
-                                                                                                    'required': ['metalType',
-                                                                                                                 'metalGrams',
-                                                                                                                 'autoValuation'],
-                                                                                                    'additionalProperties': False}}}}}},
-           '/api/metals/{id}/value': {'post': {'responses': {'201': {'description': 'Success'},
-                                                             '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                    'message }'},
-                                                             '401': {'description': '未登录或会话失效'},
-                                                             '403': {'description': '请求来源或访问权限不受信任'},
-                                                             '409': {'description': '数据冲突或业务记录不可修改'}},
-                                               'summary': 'POST /api/metals/{id}/value'}},
-           '/api/positions': {'get': {'responses': {'200': {'description': 'Success'},
-                                                    '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                    '401': {'description': '未登录或会话失效'},
-                                                    '403': {'description': '请求来源或访问权限不受信任'},
-                                                    '409': {'description': '数据冲突或业务记录不可修改'}},
-                                      'summary': 'GET /api/positions'},
-                              'post': {'responses': {'201': {'description': 'Success'},
-                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                     '401': {'description': '未登录或会话失效'},
-                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                       'summary': 'POST /api/positions',
-                                       'description': 'amount '
-                                                      '为数据库原币余额：资产账户正数为存款、负数为透支；负债账户正数为欠款、负数为溢缴存款。网页负债账户输入和显示使用相反符号（负数欠款、正数存款）。独立资产和借入借出债务本金须非负。',
-                                       'requestBody': {'required': True,
-                                                       'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                   'properties': {'included': {'type': 'boolean'},
-                                                                                                                  'groupName': {'type': 'string',
-                                                                                                                                'maxLength': 60},
-                                                                                                                  'iconId': {'nullable': True,
-                                                                                                                             'type': 'string',
-                                                                                                                             'format': 'uuid',
-                                                                                                                             'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                  'name': {'type': 'string',
-                                                                                                                           'minLength': 1,
-                                                                                                                           'maxLength': 100},
-                                                                                                                  'category': {'type': 'string',
-                                                                                                                               'minLength': 1,
-                                                                                                                               'maxLength': 40},
-                                                                                                                  'notes': {'default': '',
-                                                                                                                            'type': 'string',
-                                                                                                                            'maxLength': 2000},
-                                                                                                                  'archived': {'default': False,
-                                                                                                                               'type': 'boolean'},
-                                                                                                                  'hidden': {'default': False,
-                                                                                                                             'type': 'boolean'},
-                                                                                                                  'kind': {'type': 'string',
-                                                                                                                           'enum': ['account',
-                                                                                                                                    'asset',
-                                                                                                                                    'debt']},
-                                                                                                                  'side': {'type': 'string',
-                                                                                                                           'enum': ['asset',
-                                                                                                                                    'liability']},
-                                                                                                                  'currency': {'type': 'string',
-                                                                                                                               'enum': ['CNY',
-                                                                                                                                        'USD',
-                                                                                                                                        'HKD',
-                                                                                                                                        'EUR',
-                                                                                                                                        'GBP',
-                                                                                                                                        'JPY',
-                                                                                                                                        'AUD',
-                                                                                                                                        'CAD',
-                                                                                                                                        'CHF',
-                                                                                                                                        'SGD']},
-                                                                                                                  'amount': {'type': 'string',
-                                                                                                                             'pattern': '^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                  'date': {'type': 'string'}},
-                                                                                                   'required': ['name',
-                                                                                                                'category',
-                                                                                                                'notes',
-                                                                                                                'archived',
-                                                                                                                'hidden',
-                                                                                                                'kind',
-                                                                                                                'side',
-                                                                                                                'currency',
-                                                                                                                'amount',
-                                                                                                                'date'],
-                                                                                                   'additionalProperties': False}}}}}},
-           '/api/positions/{id}': {'get': {'responses': {'200': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'GET /api/positions/{id}'},
-                                   'patch': {'responses': {'200': {'description': 'Success'},
-                                                           '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                  'message }'},
-                                                           '401': {'description': '未登录或会话失效'},
-                                                           '403': {'description': '请求来源或访问权限不受信任'},
-                                                           '409': {'description': '数据冲突或业务记录不可修改'}},
-                                             'summary': 'PATCH /api/positions/{id}',
-                                             'requestBody': {'required': True,
-                                                             'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                         'properties': {'included': {'type': 'boolean'},
-                                                                                                                        'groupName': {'type': 'string',
-                                                                                                                                      'maxLength': 60},
-                                                                                                                        'iconId': {'nullable': True,
-                                                                                                                                   'type': 'string',
-                                                                                                                                   'format': 'uuid',
-                                                                                                                                   'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                        'name': {'type': 'string',
-                                                                                                                                 'minLength': 1,
-                                                                                                                                 'maxLength': 100},
-                                                                                                                        'category': {'type': 'string',
-                                                                                                                                     'minLength': 1,
-                                                                                                                                     'maxLength': 40},
-                                                                                                                        'notes': {'default': '',
-                                                                                                                                  'type': 'string',
-                                                                                                                                  'maxLength': 2000},
-                                                                                                                        'archived': {'default': False,
-                                                                                                                                     'type': 'boolean'},
-                                                                                                                        'hidden': {'default': False,
-                                                                                                                                   'type': 'boolean'}},
-                                                                                                         'required': ['name',
-                                                                                                                      'category',
-                                                                                                                      'notes',
-                                                                                                                      'archived',
-                                                                                                                      'hidden'],
-                                                                                                         'additionalProperties': False}}}}},
-                                   'delete': {'responses': {'200': {'description': 'Success'},
-                                                            '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                   'message }'},
-                                                            '401': {'description': '未登录或会话失效'},
-                                                            '403': {'description': '请求来源或访问权限不受信任'},
-                                                            '409': {'description': '数据冲突或业务记录不可修改'}},
-                                              'summary': 'DELETE /api/positions/{id}'}},
-           '/api/history': {'get': {'responses': {'200': {'description': '{ items, nextCursor, revealed '
-                                                                         '}；金额为绝对余额，before 为真实前序余额'},
-                                                  '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                  '401': {'description': '未登录或会话失效'},
-                                                  '403': {'description': '请求来源或访问权限不受信任'},
-                                                  '409': {'description': '数据冲突或业务记录不可修改'}},
-                                    'summary': 'GET /api/history',
-                                    'parameters': [{'name': 'limit',
-                                                    'in': 'query',
-                                                    'schema': {'type': 'integer',
-                                                               'minimum': 1,
-                                                               'maximum': 100,
-                                                               'default': 50}},
-                                                   {'name': 'cursor',
-                                                    'in': 'query',
-                                                    'schema': {'type': 'string'},
-                                                    'description': '上页 '
-                                                                   'nextCursor；业务时间及唯一顺序键降序，写入或更正后重新读取第一页'},
-                                                   {'name': 'from',
-                                                    'in': 'query',
-                                                    'schema': {'type': 'string', 'format': 'date'}},
-                                                   {'name': 'to',
-                                                    'in': 'query',
-                                                    'schema': {'type': 'string', 'format': 'date'}}]}},
-           '/api/positions/{id}/history': {'get': {'responses': {'200': {'description': '{ items, '
-                                                                                        'nextCursor, '
-                                                                                        'revealed '
-                                                                                        '}；金额为绝对余额，before '
-                                                                                        '为真实前序余额'},
-                                                                 '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                        'message }'},
-                                                                 '401': {'description': '未登录或会话失效'},
-                                                                 '403': {'description': '请求来源或访问权限不受信任'},
-                                                                 '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                   'summary': 'GET /api/positions/{id}/history',
-                                                   'parameters': [{'name': 'limit',
-                                                                   'in': 'query',
-                                                                   'schema': {'type': 'integer',
-                                                                              'minimum': 1,
-                                                                              'maximum': 100,
-                                                                              'default': 50}},
-                                                                  {'name': 'cursor',
-                                                                   'in': 'query',
-                                                                   'schema': {'type': 'string'},
-                                                                   'description': '上页 '
-                                                                                  'nextCursor；业务时间及唯一顺序键降序，写入或更正后重新读取第一页'},
-                                                                  {'name': 'from',
-                                                                   'in': 'query',
-                                                                   'schema': {'type': 'string',
-                                                                              'format': 'date'}},
-                                                                  {'name': 'to',
-                                                                   'in': 'query',
-                                                                   'schema': {'type': 'string',
-                                                                              'format': 'date'}}]}},
-           '/api/trend': {'get': {'responses': {'200': {'description': 'Success'},
-                                                '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                '401': {'description': '未登录或会话失效'},
-                                                '403': {'description': '请求来源或访问权限不受信任'},
-                                                '409': {'description': '数据冲突或业务记录不可修改'}},
-                                  'summary': 'GET /api/trend',
-                                  'parameters': [{'name': 'from',
-                                                  'in': 'query',
-                                                  'schema': {'type': 'string', 'format': 'date'}},
-                                                 {'name': 'to',
-                                                  'in': 'query',
-                                                  'schema': {'type': 'string', 'format': 'date'}},
-                                                 {'name': 'grain',
-                                                  'in': 'query',
-                                                  'schema': {'type': 'string',
-                                                             'enum': ['day', 'week', 'month'],
-                                                             'default': 'day'}}],
-                                  'description': '默认90天；日最多366天，周最多1096天，月最多3653天。取北京时间期末余额，归因累计每日变化；不返回每天项目明细。'}},
-           '/api/positions/{id}/inclusion': {'patch': {'responses': {'200': {'description': 'Success'},
-                                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                            '{ message }'},
-                                                                     '401': {'description': '未登录或会话失效'},
-                                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                       'summary': 'PATCH /api/positions/{id}/inclusion',
-                                                       'requestBody': {'required': True,
-                                                                       'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                                   'properties': {'included': {'type': 'boolean'},
-                                                                                                                                  'expectedIncluded': {'type': 'boolean'},
-                                                                                                                                  'expectedUpdatedAt': {'type': 'string',
-                                                                                                                                                        'format': 'date-time',
-                                                                                                                                                        'pattern': '^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$'}},
-                                                                                                                   'required': ['included',
-                                                                                                                                'expectedIncluded'],
-                                                                                                                   'additionalProperties': False}}}}}},
-           '/api/positions/{id}/repayment-mark': {'patch': {'responses': {'200': {'description': 'Success'},
-                                                                          '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                                 '{ message '
-                                                                                                 '}'},
-                                                                          '401': {'description': '未登录或会话失效'},
-                                                                          '403': {'description': '请求来源或访问权限不受信任'},
-                                                                          '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                            'summary': 'PATCH '
-                                                                       '/api/positions/{id}/repayment-mark',
-                                                            'requestBody': {'required': True,
-                                                                            'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                                        'properties': {'month': {'nullable': True,
-                                                                                                                                                 'type': 'string',
-                                                                                                                                                 'pattern': '^(19|[2-9]\\d)\\d{2}-(0[1-9]|1[0-2])$'},
-                                                                                                                                       'expectedMonth': {'nullable': True,
-                                                                                                                                                         'type': 'string',
-                                                                                                                                                         'pattern': '^(19|[2-9]\\d)\\d{2}-(0[1-9]|1[0-2])$'},
-                                                                                                                                       'expectedUpdatedAt': {'type': 'string',
-                                                                                                                                                             'format': 'date-time',
-                                                                                                                                                             'pattern': '^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$'}},
-                                                                                                                        'required': ['month',
-                                                                                                                                     'expectedMonth'],
-                                                                                                                        'additionalProperties': False}}}}}},
-           '/api/positions/{id}/deletion': {'get': {'responses': {'200': {'description': 'Success'},
-                                                                  '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                         '{ message }'},
-                                                                  '401': {'description': '未登录或会话失效'},
-                                                                  '403': {'description': '请求来源或访问权限不受信任'},
-                                                                  '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                    'summary': 'GET /api/positions/{id}/deletion'}},
-           '/api/positions/{id}/revisions': {'post': {'responses': {'201': {'description': 'Success'},
-                                                                    '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                           '{ message }'},
-                                                                    '401': {'description': '未登录或会话失效'},
-                                                                    '403': {'description': '请求来源或访问权限不受信任'},
-                                                                    '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                      'summary': 'POST /api/positions/{id}/revisions',
-                                                      'description': 'amount '
-                                                                     '为数据库原币余额：资产账户正数为存款、负数为透支；负债账户正数为欠款、负数为溢缴存款。网页负债账户输入和显示使用相反符号（负数欠款、正数存款）。独立资产和借入借出债务本金须非负。',
-                                                      'requestBody': {'required': True,
-                                                                      'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                                  'properties': {'amount': {'type': 'string',
-                                                                                                                                            'pattern': '^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                                 'date': {'type': 'string'},
-                                                                                                                                 'notes': {'default': '',
-                                                                                                                                           'type': 'string',
-                                                                                                                                           'maxLength': 2000},
-                                                                                                                                 'reason': {'default': 'balance',
-                                                                                                                                            'type': 'string',
-                                                                                                                                            'enum': ['initial',
-                                                                                                                                                     'scheduled_expense',
-                                                                                                                                                     'balance',
-                                                                                                                                                     'valuation',
-                                                                                                                                                     'repayment',
-                                                                                                                                                     'correction',
-                                                                                                                                                     'transfer_out',
-                                                                                                                                                     'transfer_in',
-                                                                                                                                                     'loan_borrow',
-                                                                                                                                                     'loan_lend',
-                                                                                                                                                     'loan_collect',
-                                                                                                                                                     'loan_repay']}},
-                                                                                                                  'required': ['amount',
-                                                                                                                               'date',
-                                                                                                                               'notes',
-                                                                                                                               'reason'],
-                                                                                                                  'additionalProperties': False}}}}}},
-           '/api/positions/{id}/revisions/{revisionId}': {'put': {'responses': {'200': {'description': 'Success'},
-                                                                                '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                                       '{ '
-                                                                                                       'message '
-                                                                                                       '}'},
-                                                                                '401': {'description': '未登录或会话失效'},
-                                                                                '403': {'description': '请求来源或访问权限不受信任'},
-                                                                                '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                                  'summary': 'PUT '
-                                                                             '/api/positions/{id}/revisions/{revisionId}',
-                                                                  'description': 'amount '
-                                                                                 '为数据库原币余额：资产账户正数为存款、负数为透支；负债账户正数为欠款、负数为溢缴存款。网页负债账户输入和显示使用相反符号（负数欠款、正数存款）。独立资产和借入借出债务本金须非负。',
-                                                                  'requestBody': {'required': True,
-                                                                                  'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                                              'properties': {'amount': {'type': 'string',
-                                                                                                                                                        'pattern': '^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                                             'date': {'type': 'string'},
-                                                                                                                                             'notes': {'default': '',
-                                                                                                                                                       'type': 'string',
-                                                                                                                                                       'maxLength': 2000},
-                                                                                                                                             'reason': {'default': 'balance',
-                                                                                                                                                        'type': 'string',
-                                                                                                                                                        'enum': ['initial',
-                                                                                                                                                                 'scheduled_expense',
-                                                                                                                                                                 'balance',
-                                                                                                                                                                 'valuation',
-                                                                                                                                                                 'repayment',
-                                                                                                                                                                 'correction',
-                                                                                                                                                                 'transfer_out',
-                                                                                                                                                                 'transfer_in',
-                                                                                                                                                                 'loan_borrow',
-                                                                                                                                                                 'loan_lend',
-                                                                                                                                                                 'loan_collect',
-                                                                                                                                                                 'loan_repay']}},
-                                                                                                                              'required': ['amount',
-                                                                                                                                           'date',
-                                                                                                                                           'notes',
-                                                                                                                                           'reason'],
-                                                                                                                              'additionalProperties': False}}}}},
-                                                          'delete': {'responses': {'200': {'description': 'Success'},
-                                                                                   '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                                          '{ '
-                                                                                                          'message '
-                                                                                                          '}'},
-                                                                                   '401': {'description': '未登录或会话失效'},
-                                                                                   '403': {'description': '请求来源或访问权限不受信任'},
-                                                                                   '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                                     'summary': 'DELETE '
-                                                                                '/api/positions/{id}/revisions/{revisionId}'}},
-           '/api/positions/{id}/links': {'put': {'responses': {'200': {'description': 'Success'},
-                                                               '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                      'message }'},
-                                                               '401': {'description': '未登录或会话失效'},
-                                                               '403': {'description': '请求来源或访问权限不受信任'},
-                                                               '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                 'summary': 'PUT /api/positions/{id}/links',
-                                                 'requestBody': {'required': True,
-                                                                 'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                             'properties': {'targetIds': {'maxItems': 20,
-                                                                                                                                          'type': 'array',
-                                                                                                                                          'items': {'type': 'string',
-                                                                                                                                                    'format': 'uuid',
-                                                                                                                                                    'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'}}},
-                                                                                                             'required': ['targetIds'],
-                                                                                                             'additionalProperties': False}}}}}},
-           '/api/overview': {'get': {'responses': {'200': {'description': 'Success'},
-                                                   '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                   '401': {'description': '未登录或会话失效'},
-                                                   '403': {'description': '请求来源或访问权限不受信任'},
-                                                   '409': {'description': '数据冲突或业务记录不可修改'}},
-                                     'summary': 'GET /api/overview'}},
-           '/api/settings': {'get': {'responses': {'200': {'description': 'Success'},
-                                                   '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                   '401': {'description': '未登录或会话失效'},
-                                                   '403': {'description': '请求来源或访问权限不受信任'},
-                                                   '409': {'description': '数据冲突或业务记录不可修改'}},
-                                     'summary': 'GET /api/settings'},
-                             'patch': {'responses': {'200': {'description': 'Success'},
-                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                     '401': {'description': '未登录或会话失效'},
-                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                       'summary': 'PATCH /api/settings',
-                                       'requestBody': {'required': True,
-                                                       'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                   'properties': {'baseCurrency': {'type': 'string',
-                                                                                                                                   'enum': ['CNY',
-                                                                                                                                            'USD',
-                                                                                                                                            'HKD',
-                                                                                                                                            'EUR',
-                                                                                                                                            'GBP',
-                                                                                                                                            'JPY',
-                                                                                                                                            'AUD',
-                                                                                                                                            'CAD',
-                                                                                                                                            'CHF',
-                                                                                                                                            'SGD']},
-                                                                                                                  'hiddenMenus': {'maxItems': 7,
-                                                                                                                                  'type': 'array',
-                                                                                                                                  'items': {'type': 'string',
-                                                                                                                                            'enum': ['overview',
-                                                                                                                                                     'account',
-                                                                                                                                                     'asset',
-                                                                                                                                                     'debt',
-                                                                                                                                                     'history',
-                                                                                                                                                     'calendar',
-                                                                                                                                                     'schedules']}},
-                                                                                                                  'accountGroupOrder': {'maxItems': 1000,
-                                                                                                                                        'type': 'array',
-                                                                                                                                        'items': {'type': 'string',
-                                                                                                                                                  'maxLength': 60}},
-                                                                                                                  'showNotes': {'type': 'boolean'},
-                                                                                                                  'idleMinutes': {'type': 'integer',
-                                                                                                                                  'minimum': 0,
-                                                                                                                                  'maximum': 1440},
-                                                                                                                  'sessionHours': {'type': 'integer',
-                                                                                                                                   'minimum': 1,
-                                                                                                                                   'maximum': 720},
-                                                                                                                  'requireHiddenPassword': {'type': 'boolean'},
-                                                                                                                  'overviewCards': {'maxItems': 7,
-                                                                                                                                    'type': 'array',
-                                                                                                                                    'items': {'type': 'string',
-                                                                                                                                              'enum': ['assets',
-                                                                                                                                                       'liabilities',
-                                                                                                                                                       'net',
-                                                                                                                                                       'trend',
-                                                                                                                                                       'composition',
-                                                                                                                                                       'recent',
-                                                                                                                                                       'attribution']}},
-                                                                                                                  'includeIndependentAssets': {'type': 'boolean'}},
-                                                                                                   'additionalProperties': False}}}}}},
-           '/api/rates/refresh': {'post': {'responses': {'201': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'POST /api/rates/refresh'}},
-           '/api/schedules': {'get': {'responses': {'200': {'description': 'Success'},
-                                                    '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                    '401': {'description': '未登录或会话失效'},
-                                                    '403': {'description': '请求来源或访问权限不受信任'},
-                                                    '409': {'description': '数据冲突或业务记录不可修改'}},
-                                      'summary': 'GET /api/schedules'},
-                              'post': {'responses': {'201': {'description': 'Success'},
-                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                     '401': {'description': '未登录或会话失效'},
-                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                       'summary': 'POST /api/schedules',
-                                       'requestBody': {'required': True,
-                                                       'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                   'properties': {'name': {'type': 'string',
-                                                                                                                           'minLength': 1,
-                                                                                                                           'maxLength': 100},
-                                                                                                                  'operation': {'type': 'string',
-                                                                                                                                'enum': ['expense',
-                                                                                                                                         'transfer']},
-                                                                                                                  'sourceId': {'type': 'string',
-                                                                                                                               'format': 'uuid',
-                                                                                                                               'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                  'targetId': {'default': None,
-                                                                                                                               'nullable': True,
-                                                                                                                               'type': 'string',
-                                                                                                                               'format': 'uuid',
-                                                                                                                               'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                  'amount': {'type': 'string',
-                                                                                                                             'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                  'received': {'default': '0',
-                                                                                                                               'type': 'string',
-                                                                                                                               'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                  'nextAt': {'type': 'string',
-                                                                                                                             'pattern': '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$'},
-                                                                                                                  'intervalDays': {'type': 'integer',
-                                                                                                                                   'minimum': 0,
-                                                                                                                                   'maximum': 3650},
-                                                                                                                  'notes': {'default': '',
-                                                                                                                            'type': 'string',
-                                                                                                                            'maxLength': 2000}},
-                                                                                                   'required': ['name',
-                                                                                                                'operation',
-                                                                                                                'sourceId',
-                                                                                                                'targetId',
-                                                                                                                'amount',
-                                                                                                                'received',
-                                                                                                                'nextAt',
-                                                                                                                'intervalDays',
-                                                                                                                'notes'],
-                                                                                                   'additionalProperties': False}}}}}},
-           '/api/schedules/{id}': {'put': {'responses': {'200': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'PUT /api/schedules/{id}',
-                                           'requestBody': {'required': True,
-                                                           'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                       'properties': {'name': {'type': 'string',
-                                                                                                                               'minLength': 1,
-                                                                                                                               'maxLength': 100},
-                                                                                                                      'operation': {'type': 'string',
-                                                                                                                                    'enum': ['expense',
-                                                                                                                                             'transfer']},
-                                                                                                                      'sourceId': {'type': 'string',
-                                                                                                                                   'format': 'uuid',
-                                                                                                                                   'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                      'targetId': {'default': None,
-                                                                                                                                   'nullable': True,
-                                                                                                                                   'type': 'string',
-                                                                                                                                   'format': 'uuid',
-                                                                                                                                   'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                      'amount': {'type': 'string',
-                                                                                                                                 'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                      'received': {'default': '0',
-                                                                                                                                   'type': 'string',
-                                                                                                                                   'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                      'nextAt': {'type': 'string',
-                                                                                                                                 'pattern': '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$'},
-                                                                                                                      'intervalDays': {'type': 'integer',
-                                                                                                                                       'minimum': 0,
-                                                                                                                                       'maximum': 3650},
-                                                                                                                      'notes': {'default': '',
-                                                                                                                                'type': 'string',
-                                                                                                                                'maxLength': 2000}},
-                                                                                                       'required': ['name',
-                                                                                                                    'operation',
-                                                                                                                    'sourceId',
-                                                                                                                    'targetId',
-                                                                                                                    'amount',
-                                                                                                                    'received',
-                                                                                                                    'nextAt',
-                                                                                                                    'intervalDays',
-                                                                                                                    'notes'],
-                                                                                                       'additionalProperties': False}}}}},
-                                   'patch': {'responses': {'200': {'description': 'Success'},
-                                                           '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                  'message }'},
-                                                           '401': {'description': '未登录或会话失效'},
-                                                           '403': {'description': '请求来源或访问权限不受信任'},
-                                                           '409': {'description': '数据冲突或业务记录不可修改'}},
-                                             'summary': 'PATCH /api/schedules/{id}',
-                                             'requestBody': {'required': True,
-                                                             'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                         'properties': {'enabled': {'type': 'boolean'}},
-                                                                                                         'required': ['enabled'],
-                                                                                                         'additionalProperties': False}}}}},
-                                   'delete': {'responses': {'200': {'description': 'Success'},
-                                                            '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                   'message }'},
-                                                            '401': {'description': '未登录或会话失效'},
-                                                            '403': {'description': '请求来源或访问权限不受信任'},
-                                                            '409': {'description': '数据冲突或业务记录不可修改'}},
-                                              'summary': 'DELETE /api/schedules/{id}'}},
-           '/api/schedules/run': {'post': {'responses': {'201': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'POST /api/schedules/run'}},
-           '/api/transfers': {'get': {'responses': {'200': {'description': '{ items, nextCursor, revealed '
-                                                                           '}；金额为绝对余额，before 为真实前序余额'},
-                                                    '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                    '401': {'description': '未登录或会话失效'},
-                                                    '403': {'description': '请求来源或访问权限不受信任'},
-                                                    '409': {'description': '数据冲突或业务记录不可修改'}},
-                                      'summary': 'GET /api/transfers',
-                                      'parameters': [{'name': 'limit',
-                                                      'in': 'query',
-                                                      'schema': {'type': 'integer',
-                                                                 'minimum': 1,
-                                                                 'maximum': 100,
-                                                                 'default': 50}},
-                                                     {'name': 'cursor',
-                                                      'in': 'query',
-                                                      'schema': {'type': 'string'},
-                                                      'description': '上页 '
-                                                                     'nextCursor；业务时间及唯一顺序键降序，写入或更正后重新读取第一页'},
-                                                     {'name': 'from',
-                                                      'in': 'query',
-                                                      'schema': {'type': 'string', 'format': 'date'}},
-                                                     {'name': 'to',
-                                                      'in': 'query',
-                                                      'schema': {'type': 'string', 'format': 'date'}}]},
-                              'post': {'responses': {'201': {'description': 'Success'},
-                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                     '401': {'description': '未登录或会话失效'},
-                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                       'summary': 'POST /api/transfers',
-                                       'description': 'repay '
-                                                      '从资产账户向借入债务或负债账户还款；负债账户超额还款保存为溢缴存款。amount/received '
-                                                      '为原币本金，fee 负数表示优惠。同币种本金一致，双边金额与历史原子更新。',
-                                       'requestBody': {'required': True,
-                                                       'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                   'properties': {'operation': {'default': 'transfer',
-                                                                                                                                'type': 'string',
-                                                                                                                                'enum': ['transfer',
-                                                                                                                                         'borrow',
-                                                                                                                                         'lend',
-                                                                                                                                         'collect',
-                                                                                                                                         'repay']},
-                                                                                                                  'requestId': {'type': 'string',
-                                                                                                                                'format': 'uuid',
-                                                                                                                                'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                  'sourceId': {'type': 'string',
-                                                                                                                               'format': 'uuid',
-                                                                                                                               'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                  'targetId': {'type': 'string',
-                                                                                                                               'format': 'uuid',
-                                                                                                                               'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                  'amount': {'type': 'string',
-                                                                                                                             'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                  'received': {'type': 'string',
-                                                                                                                               'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                  'fee': {'default': '0',
-                                                                                                                          'type': 'string',
-                                                                                                                          'pattern': '^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                  'date': {'type': 'string'},
-                                                                                                                  'notes': {'default': '',
-                                                                                                                            'type': 'string',
-                                                                                                                            'maxLength': 2000}},
-                                                                                                   'required': ['operation',
-                                                                                                                'sourceId',
-                                                                                                                'targetId',
-                                                                                                                'amount',
-                                                                                                                'received',
-                                                                                                                'fee',
-                                                                                                                'date',
-                                                                                                                'notes'],
-                                                                                                   'additionalProperties': False}}}}}},
-           '/api/transfers/revision/{revisionId}': {'get': {'responses': {'200': {'description': 'Success'},
-                                                                          '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                                 '{ message '
-                                                                                                 '}'},
-                                                                          '401': {'description': '未登录或会话失效'},
-                                                                          '403': {'description': '请求来源或访问权限不受信任'},
-                                                                          '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                            'summary': 'GET '
-                                                                       '/api/transfers/revision/{revisionId}'}},
-           '/api/transfers/{id}': {'put': {'responses': {'200': {'description': 'Success'},
-                                                         '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                                '}'},
-                                                         '401': {'description': '未登录或会话失效'},
-                                                         '403': {'description': '请求来源或访问权限不受信任'},
-                                                         '409': {'description': '数据冲突或业务记录不可修改'}},
-                                           'summary': 'PUT /api/transfers/{id}',
-                                           'description': 'repay '
-                                                          '从资产账户向借入债务或负债账户还款；负债账户超额还款保存为溢缴存款。amount/received '
-                                                          '为原币本金，fee 负数表示优惠。同币种本金一致，双边金额与历史原子更新。',
-                                           'requestBody': {'required': True,
-                                                           'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                       'properties': {'operation': {'default': 'transfer',
-                                                                                                                                    'type': 'string',
-                                                                                                                                    'enum': ['transfer',
-                                                                                                                                             'borrow',
-                                                                                                                                             'lend',
-                                                                                                                                             'collect',
-                                                                                                                                             'repay']},
-                                                                                                                      'requestId': {'type': 'string',
-                                                                                                                                    'format': 'uuid',
-                                                                                                                                    'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                      'sourceId': {'type': 'string',
-                                                                                                                                   'format': 'uuid',
-                                                                                                                                   'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                      'targetId': {'type': 'string',
-                                                                                                                                   'format': 'uuid',
-                                                                                                                                   'pattern': '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'},
-                                                                                                                      'amount': {'type': 'string',
-                                                                                                                                 'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                      'received': {'type': 'string',
-                                                                                                                                   'pattern': '^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                      'fee': {'default': '0',
-                                                                                                                              'type': 'string',
-                                                                                                                              'pattern': '^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$'},
-                                                                                                                      'date': {'type': 'string'},
-                                                                                                                      'notes': {'default': '',
-                                                                                                                                'type': 'string',
-                                                                                                                                'maxLength': 2000}},
-                                                                                                       'required': ['operation',
-                                                                                                                    'sourceId',
-                                                                                                                    'targetId',
-                                                                                                                    'amount',
-                                                                                                                    'received',
-                                                                                                                    'fee',
-                                                                                                                    'date',
-                                                                                                                    'notes'],
-                                                                                                       'additionalProperties': False}}}}},
-                                   'delete': {'responses': {'200': {'description': 'Success'},
-                                                            '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                   'message }'},
-                                                            '401': {'description': '未登录或会话失效'},
-                                                            '403': {'description': '请求来源或访问权限不受信任'},
-                                                            '409': {'description': '数据冲突或业务记录不可修改'}},
-                                              'summary': 'DELETE /api/transfers/{id}'}},
-           '/api/agent': {'get': {'responses': {'200': {'description': 'Success'},
-                                                '400': {'description': '请求格式、金额或业务校验失败，返回 { message }'},
-                                                '401': {'description': '未登录或会话失效'},
-                                                '403': {'description': '请求来源或访问权限不受信任'},
-                                                '409': {'description': '数据冲突或业务记录不可修改'}},
-                                  'summary': 'GET /api/agent'}},
-           '/api/agent/tokens': {'post': {'responses': {'201': {'description': 'Success'},
-                                                        '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                               '}'},
-                                                        '401': {'description': '未登录或会话失效'},
-                                                        '403': {'description': '请求来源或访问权限不受信任'},
-                                                        '409': {'description': '数据冲突或业务记录不可修改'}},
-                                          'summary': 'POST /api/agent/tokens'}},
-           '/api/agent/connections/{id}': {'patch': {'responses': {'200': {'description': 'Success'},
-                                                                   '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                          '{ message }'},
-                                                                   '401': {'description': '未登录或会话失效'},
-                                                                   '403': {'description': '请求来源或访问权限不受信任'},
-                                                                   '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                     'summary': 'PATCH /api/agent/connections/{id}',
-                                                     'description': '验证当前密码后修改自己的有效 OAuth/PAT '
-                                                                    '连接权限；实际权限变更取消未确认草稿，不延长授权期限。只读用户不能授予写入。',
-                                                     'requestBody': {'required': True,
-                                                                     'content': {'application/json': {'schema': {'type': 'object',
-                                                                                                                 'properties': {'scopes': {'minItems': 1,
-                                                                                                                                           'maxItems': 4,
-                                                                                                                                           'type': 'array',
-                                                                                                                                           'items': {'type': 'string',
-                                                                                                                                                     'enum': ['read',
-                                                                                                                                                              'draft',
-                                                                                                                                                              'write',
-                                                                                                                                                              'hidden_read',
-                                                                                                                                                              'hidden_write']}},
-                                                                                                                                'password': {'type': 'string',
-                                                                                                                                             'minLength': 1,
-                                                                                                                                             'maxLength': 72}},
-                                                                                                                 'required': ['scopes',
-                                                                                                                              'password'],
-                                                                                                                 'additionalProperties': False}}}}},
-                                           'delete': {'responses': {'200': {'description': 'Success'},
-                                                                    '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                           '{ message }'},
-                                                                    '401': {'description': '未登录或会话失效'},
-                                                                    '403': {'description': '请求来源或访问权限不受信任'},
-                                                                    '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                      'summary': 'DELETE /api/agent/connections/{id}'}},
-           '/api/agent/authorizations/{id}': {'get': {'responses': {'200': {'description': 'Success'},
-                                                                    '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                           '{ message }'},
-                                                                    '401': {'description': '未登录或会话失效'},
-                                                                    '403': {'description': '请求来源或访问权限不受信任'},
-                                                                    '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                      'summary': 'GET /api/agent/authorizations/{id}'},
-                                              'post': {'responses': {'201': {'description': 'Success'},
-                                                                     '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                            '{ message }'},
-                                                                     '401': {'description': '未登录或会话失效'},
-                                                                     '403': {'description': '请求来源或访问权限不受信任'},
-                                                                     '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                       'summary': 'POST /api/agent/authorizations/{id}'}},
-           '/api/agent/drafts': {'get': {'responses': {'200': {'description': 'Success'},
-                                                       '400': {'description': '请求格式、金额或业务校验失败，返回 { message '
-                                                                              '}'},
-                                                       '401': {'description': '未登录或会话失效'},
-                                                       '403': {'description': '请求来源或访问权限不受信任'},
-                                                       '409': {'description': '数据冲突或业务记录不可修改'}},
-                                         'summary': 'GET /api/agent/drafts'}},
-           '/api/agent/operations/confirm-batch': {'post': {'responses': {'201': {'description': 'Success'},
-                                                                          '400': {'description': '请求格式、金额或业务校验失败，返回 '
-                                                                                                 '{ message '
-                                                                                                 '}'},
-                                                                          '401': {'description': '未登录或会话失效'},
-                                                                          '403': {'description': '请求来源或访问权限不受信任'},
-                                                                          '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                            'summary': 'POST '
-                                                                       '/api/agent/operations/confirm-batch'}},
-           '/api/agent/operations/{id}': {'get': {'responses': {'200': {'description': 'Success'},
-                                                                '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                       'message }'},
-                                                                '401': {'description': '未登录或会话失效'},
-                                                                '403': {'description': '请求来源或访问权限不受信任'},
-                                                                '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                  'summary': 'GET /api/agent/operations/{id}'},
-                                          'post': {'responses': {'201': {'description': 'Success'},
-                                                                 '400': {'description': '请求格式、金额或业务校验失败，返回 { '
-                                                                                        'message }'},
-                                                                 '401': {'description': '未登录或会话失效'},
-                                                                 '403': {'description': '请求来源或访问权限不受信任'},
-                                                                 '409': {'description': '数据冲突或业务记录不可修改'}},
-                                                   'summary': 'POST /api/agent/operations/{id}'}}}}
+DOCUMENT = {
+    "openapi": "3.0.0",
+    "info": {
+        "title": "WorthPath API",
+        "description": "个人资产管理接口。金额使用十进制字符串；登录会话由 HttpOnly Cookie 传递，数据归属由服务端验证。",
+        "version": "1.1",
+        "contact": {},
+    },
+    "tags": [],
+    "servers": [],
+    "components": {
+        "securitySchemes": {
+            "session": {"type": "apiKey", "in": "cookie", "name": "wp_session"}
+        }
+    },
+    "security": [{"session": []}],
+    "paths": {
+        "/api/admin/users": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/admin/users",
+            },
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/admin/users",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 64,
+                                        "pattern": "^[\\p{L}\\p{N}_@.\\-]+$",
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 10,
+                                        "maxLength": 72,
+                                    },
+                                    "role": {
+                                        "default": "user",
+                                        "type": "string",
+                                        "enum": ["admin", "user", "readonly"],
+                                    },
+                                },
+                                "required": ["username", "password", "role"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        "/api/admin/users/{id}": {
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/admin/users/{id}",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": ["admin", "user", "readonly"],
+                                    },
+                                    "banned": {"type": "boolean"},
+                                },
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "delete": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "DELETE /api/admin/users/{id}",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "confirmationUsername": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 64,
+                                        "pattern": "^[\\p{L}\\p{N}_@.\\-]+$",
+                                    },
+                                    "currentPassword": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 72,
+                                    },
+                                },
+                                "required": ["confirmationUsername", "currentPassword"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        "/api/health": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/health",
+                "security": [],
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/auth/register",
+                "security": [],
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/auth/login",
+                "security": [],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 64,
+                                        "pattern": "^[\\p{L}\\p{N}_@.\\-]+$",
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 72,
+                                    },
+                                },
+                                "required": ["username", "password"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/auth/me",
+            }
+        },
+        "/api/auth/credentials": {
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/auth/credentials",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "currentPassword": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 72,
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 64,
+                                        "pattern": "^[\\p{L}\\p{N}_@.\\-]+$",
+                                    },
+                                    "newPassword": {
+                                        "type": "string",
+                                        "minLength": 10,
+                                        "maxLength": 72,
+                                    },
+                                },
+                                "required": ["currentPassword"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/auth/activity": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/auth/activity",
+            }
+        },
+        "/api/auth/reveal": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/auth/reveal",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 10,
+                                        "maxLength": 72,
+                                    }
+                                },
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/auth/lock": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/auth/lock",
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/auth/logout",
+            }
+        },
+        "/api/backup": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "该用户全部数据的 ZIP 文件",
+                        "content": {
+                            "application/zip": {
+                                "schema": {"type": "string", "format": "binary"}
+                            }
+                        },
+                    },
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/backup",
+            }
+        },
+        "/api/backup/upload": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/backup/upload",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["file"],
+                                "properties": {
+                                    "file": {"type": "string", "format": "binary"}
+                                },
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/backup/import-file": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/backup/import-file",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "confirmed": {"type": "boolean", "enum": [True]},
+                                },
+                                "required": ["token", "confirmed"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/backup/clear-status": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/backup/clear-status",
+            }
+        },
+        "/api/backup/clear": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/backup/clear",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "confirmation": {
+                                        "type": "string",
+                                        "enum": ["确定清空"],
+                                    }
+                                },
+                                "required": ["confirmation"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/calendar": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/calendar",
+            }
+        },
+        "/api/calendar/day": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/calendar/day",
+            }
+        },
+        "/api/icons": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/icons",
+            }
+        },
+        "/api/icons/{id}/image": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/icons/{id}/image",
+            }
+        },
+        "/api/icons/upload": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/icons/upload",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["file", "name"],
+                                "properties": {
+                                    "file": {"type": "string", "format": "binary"},
+                                    "name": {
+                                        "type": "string",
+                                        "description": "共享图标必须包含中文",
+                                    },
+                                    "shared": {
+                                        "type": "string",
+                                        "enum": ["false", "true"],
+                                        "default": "false",
+                                    },
+                                    "confirmed": {
+                                        "type": "string",
+                                        "enum": ["true"],
+                                        "description": "共享发布必须确认",
+                                    },
+                                },
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/metals": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/metals",
+            }
+        },
+        "/api/metals/holdings": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/metals/holdings",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "metalType": {
+                                        "type": "string",
+                                        "enum": ["gold", "silver"],
+                                    },
+                                    "metalGrams": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "metalCostPerGram": {
+                                        "description": "每克实物买入成本，原币十进制字符串；null "
+                                        "清除成本，省略保留",
+                                        "nullable": True,
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,11})(\\.\\d{1,12})?$",
+                                    },
+                                    "autoValuation": {"type": "boolean"},
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 100,
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "enum": [
+                                            "CNY",
+                                            "USD",
+                                            "HKD",
+                                            "EUR",
+                                            "GBP",
+                                            "JPY",
+                                            "AUD",
+                                            "CAD",
+                                            "CHF",
+                                            "SGD",
+                                        ],
+                                    },
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                    "hidden": {"default": False, "type": "boolean"},
+                                    "included": {"default": True, "type": "boolean"},
+                                    "date": {"type": "string"},
+                                },
+                                "required": [
+                                    "metalType",
+                                    "metalGrams",
+                                    "autoValuation",
+                                    "name",
+                                    "currency",
+                                    "notes",
+                                    "hidden",
+                                    "included",
+                                    "date",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/metals/refresh": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/metals/refresh",
+            }
+        },
+        "/api/metals/{id}": {
+            "put": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PUT /api/metals/{id}",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "metalType": {
+                                        "type": "string",
+                                        "enum": ["gold", "silver"],
+                                    },
+                                    "metalGrams": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "metalCostPerGram": {
+                                        "description": "每克实物买入成本，原币十进制字符串；null "
+                                        "清除成本，省略保留",
+                                        "nullable": True,
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,11})(\\.\\d{1,12})?$",
+                                    },
+                                    "autoValuation": {"type": "boolean"},
+                                },
+                                "required": [
+                                    "metalType",
+                                    "metalGrams",
+                                    "autoValuation",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/metals/{id}/value": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/metals/{id}/value",
+            }
+        },
+        "/api/positions": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/positions",
+            },
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/positions",
+                "description": "amount "
+                "为数据库原币余额：资产账户正数为存款、负数为透支；负债账户正数为欠款、负数为溢缴存款。网页负债账户输入和显示使用相反符号（负数欠款、正数存款）。独立资产和借入借出债务本金须非负。",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "included": {"type": "boolean"},
+                                    "groupName": {"type": "string", "maxLength": 60},
+                                    "iconId": {
+                                        "nullable": True,
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 100,
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 40,
+                                    },
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                    "archived": {"default": False, "type": "boolean"},
+                                    "hidden": {"default": False, "type": "boolean"},
+                                    "kind": {
+                                        "type": "string",
+                                        "enum": ["account", "asset", "debt"],
+                                    },
+                                    "side": {
+                                        "type": "string",
+                                        "enum": ["asset", "liability"],
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "enum": [
+                                            "CNY",
+                                            "USD",
+                                            "HKD",
+                                            "EUR",
+                                            "GBP",
+                                            "JPY",
+                                            "AUD",
+                                            "CAD",
+                                            "CHF",
+                                            "SGD",
+                                        ],
+                                    },
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "date": {"type": "string"},
+                                },
+                                "required": [
+                                    "name",
+                                    "category",
+                                    "notes",
+                                    "archived",
+                                    "hidden",
+                                    "kind",
+                                    "side",
+                                    "currency",
+                                    "amount",
+                                    "date",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        "/api/positions/{id}": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/positions/{id}",
+            },
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/positions/{id}",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "included": {"type": "boolean"},
+                                    "groupName": {"type": "string", "maxLength": 60},
+                                    "iconId": {
+                                        "nullable": True,
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 100,
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 40,
+                                    },
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                    "archived": {"default": False, "type": "boolean"},
+                                    "hidden": {"default": False, "type": "boolean"},
+                                },
+                                "required": [
+                                    "name",
+                                    "category",
+                                    "notes",
+                                    "archived",
+                                    "hidden",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "delete": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "DELETE /api/positions/{id}",
+            },
+        },
+        "/api/history": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "{ items, nextCursor, revealed "
+                        "}；金额为绝对余额，before 为真实前序余额"
+                    },
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/history",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 50,
+                        },
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {"type": "string"},
+                        "description": "上页 "
+                        "nextCursor；业务时间及唯一顺序键降序，写入或更正后重新读取第一页",
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                ],
+            }
+        },
+        "/api/positions/{id}/history": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "{ items, "
+                        "nextCursor, "
+                        "revealed "
+                        "}；金额为绝对余额，before "
+                        "为真实前序余额"
+                    },
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/positions/{id}/history",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 50,
+                        },
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {"type": "string"},
+                        "description": "上页 "
+                        "nextCursor；业务时间及唯一顺序键降序，写入或更正后重新读取第一页",
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                ],
+            }
+        },
+        "/api/trend": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/trend",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                    {
+                        "name": "grain",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["day", "week", "month"],
+                            "default": "day",
+                        },
+                    },
+                ],
+                "description": "默认90天；日最多366天，周最多1096天，月最多3653天。取北京时间期末余额，归因累计每日变化；不返回每天项目明细。",
+            }
+        },
+        "/api/positions/{id}/inclusion": {
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/positions/{id}/inclusion",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "included": {"type": "boolean"},
+                                    "expectedIncluded": {"type": "boolean"},
+                                    "expectedUpdatedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                    },
+                                },
+                                "required": ["included", "expectedIncluded"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/positions/{id}/repayment-mark": {
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/positions/{id}/repayment-mark",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "month": {
+                                        "nullable": True,
+                                        "type": "string",
+                                        "pattern": "^(19|[2-9]\\d)\\d{2}-(0[1-9]|1[0-2])$",
+                                    },
+                                    "expectedMonth": {
+                                        "nullable": True,
+                                        "type": "string",
+                                        "pattern": "^(19|[2-9]\\d)\\d{2}-(0[1-9]|1[0-2])$",
+                                    },
+                                    "expectedUpdatedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                    },
+                                },
+                                "required": ["month", "expectedMonth"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/positions/{id}/deletion": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/positions/{id}/deletion",
+            }
+        },
+        "/api/positions/{id}/revisions": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/positions/{id}/revisions",
+                "description": "amount "
+                "为数据库原币余额：资产账户正数为存款、负数为透支；负债账户正数为欠款、负数为溢缴存款。网页负债账户输入和显示使用相反符号（负数欠款、正数存款）。独立资产和借入借出债务本金须非负。",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "date": {"type": "string"},
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                    "reason": {
+                                        "default": "balance",
+                                        "type": "string",
+                                        "enum": [
+                                            "initial",
+                                            "scheduled_expense",
+                                            "balance",
+                                            "valuation",
+                                            "repayment",
+                                            "correction",
+                                            "transfer_out",
+                                            "transfer_in",
+                                            "loan_borrow",
+                                            "loan_lend",
+                                            "loan_collect",
+                                            "loan_repay",
+                                        ],
+                                    },
+                                },
+                                "required": ["amount", "date", "notes", "reason"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/positions/{id}/revisions/{revisionId}": {
+            "put": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PUT /api/positions/{id}/revisions/{revisionId}",
+                "description": "amount "
+                "为数据库原币余额：资产账户正数为存款、负数为透支；负债账户正数为欠款、负数为溢缴存款。网页负债账户输入和显示使用相反符号（负数欠款、正数存款）。独立资产和借入借出债务本金须非负。",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "date": {"type": "string"},
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                    "reason": {
+                                        "default": "balance",
+                                        "type": "string",
+                                        "enum": [
+                                            "initial",
+                                            "scheduled_expense",
+                                            "balance",
+                                            "valuation",
+                                            "repayment",
+                                            "correction",
+                                            "transfer_out",
+                                            "transfer_in",
+                                            "loan_borrow",
+                                            "loan_lend",
+                                            "loan_collect",
+                                            "loan_repay",
+                                        ],
+                                    },
+                                },
+                                "required": ["amount", "date", "notes", "reason"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "delete": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "DELETE /api/positions/{id}/revisions/{revisionId}",
+            },
+        },
+        "/api/positions/{id}/links": {
+            "put": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PUT /api/positions/{id}/links",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "targetIds": {
+                                        "maxItems": 20,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        },
+                                    }
+                                },
+                                "required": ["targetIds"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            }
+        },
+        "/api/overview": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/overview",
+            }
+        },
+        "/api/settings": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/settings",
+            },
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/settings",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "baseCurrency": {
+                                        "type": "string",
+                                        "enum": [
+                                            "CNY",
+                                            "USD",
+                                            "HKD",
+                                            "EUR",
+                                            "GBP",
+                                            "JPY",
+                                            "AUD",
+                                            "CAD",
+                                            "CHF",
+                                            "SGD",
+                                        ],
+                                    },
+                                    "hiddenMenus": {
+                                        "maxItems": 7,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "overview",
+                                                "account",
+                                                "asset",
+                                                "debt",
+                                                "history",
+                                                "calendar",
+                                                "schedules",
+                                            ],
+                                        },
+                                    },
+                                    "accountGroupOrder": {
+                                        "maxItems": 1000,
+                                        "type": "array",
+                                        "items": {"type": "string", "maxLength": 60},
+                                    },
+                                    "showNotes": {"type": "boolean"},
+                                    "idleMinutes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1440,
+                                    },
+                                    "sessionHours": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 720,
+                                    },
+                                    "requireHiddenPassword": {"type": "boolean"},
+                                    "overviewCards": {
+                                        "maxItems": 7,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "assets",
+                                                "liabilities",
+                                                "net",
+                                                "trend",
+                                                "composition",
+                                                "recent",
+                                                "attribution",
+                                            ],
+                                        },
+                                    },
+                                    "includeIndependentAssets": {"type": "boolean"},
+                                },
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        "/api/rates/refresh": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/rates/refresh",
+            }
+        },
+        "/api/schedules": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/schedules",
+            },
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/schedules",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 100,
+                                    },
+                                    "operation": {
+                                        "type": "string",
+                                        "enum": ["expense", "transfer"],
+                                    },
+                                    "sourceId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "targetId": {
+                                        "default": None,
+                                        "nullable": True,
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "received": {
+                                        "default": "0",
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "nextAt": {
+                                        "type": "string",
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
+                                    },
+                                    "intervalDays": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 3650,
+                                    },
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                },
+                                "required": [
+                                    "name",
+                                    "operation",
+                                    "sourceId",
+                                    "targetId",
+                                    "amount",
+                                    "received",
+                                    "nextAt",
+                                    "intervalDays",
+                                    "notes",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        "/api/schedules/{id}": {
+            "put": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PUT /api/schedules/{id}",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 100,
+                                    },
+                                    "operation": {
+                                        "type": "string",
+                                        "enum": ["expense", "transfer"],
+                                    },
+                                    "sourceId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "targetId": {
+                                        "default": None,
+                                        "nullable": True,
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "received": {
+                                        "default": "0",
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "nextAt": {
+                                        "type": "string",
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
+                                    },
+                                    "intervalDays": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 3650,
+                                    },
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                },
+                                "required": [
+                                    "name",
+                                    "operation",
+                                    "sourceId",
+                                    "targetId",
+                                    "amount",
+                                    "received",
+                                    "nextAt",
+                                    "intervalDays",
+                                    "notes",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/schedules/{id}",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {"enabled": {"type": "boolean"}},
+                                "required": ["enabled"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "delete": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "DELETE /api/schedules/{id}",
+            },
+        },
+        "/api/schedules/run": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/schedules/run",
+            }
+        },
+        "/api/transfers": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "{ items, nextCursor, revealed "
+                        "}；金额为绝对余额，before 为真实前序余额"
+                    },
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/transfers",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 50,
+                        },
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {"type": "string"},
+                        "description": "上页 "
+                        "nextCursor；业务时间及唯一顺序键降序，写入或更正后重新读取第一页",
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "schema": {"type": "string", "format": "date"},
+                    },
+                ],
+            },
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/transfers",
+                "description": "repay "
+                "从资产账户向借入债务或负债账户还款；负债账户超额还款保存为溢缴存款。amount/received "
+                "为原币本金，fee 负数表示优惠。同币种本金一致，双边金额与历史原子更新。",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "operation": {
+                                        "default": "transfer",
+                                        "type": "string",
+                                        "enum": [
+                                            "transfer",
+                                            "borrow",
+                                            "lend",
+                                            "collect",
+                                            "repay",
+                                        ],
+                                    },
+                                    "requestId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "sourceId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "targetId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "received": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "fee": {
+                                        "default": "0",
+                                        "type": "string",
+                                        "pattern": "^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "date": {"type": "string"},
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                },
+                                "required": [
+                                    "operation",
+                                    "sourceId",
+                                    "targetId",
+                                    "amount",
+                                    "received",
+                                    "fee",
+                                    "date",
+                                    "notes",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+        },
+        "/api/transfers/revision/{revisionId}": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/transfers/revision/{revisionId}",
+            }
+        },
+        "/api/transfers/{id}": {
+            "put": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PUT /api/transfers/{id}",
+                "description": "repay "
+                "从资产账户向借入债务或负债账户还款；负债账户超额还款保存为溢缴存款。amount/received "
+                "为原币本金，fee 负数表示优惠。同币种本金一致，双边金额与历史原子更新。",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "operation": {
+                                        "default": "transfer",
+                                        "type": "string",
+                                        "enum": [
+                                            "transfer",
+                                            "borrow",
+                                            "lend",
+                                            "collect",
+                                            "repay",
+                                        ],
+                                    },
+                                    "requestId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "sourceId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "targetId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    },
+                                    "amount": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "received": {
+                                        "type": "string",
+                                        "pattern": "^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "fee": {
+                                        "default": "0",
+                                        "type": "string",
+                                        "pattern": "^-?(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$",
+                                    },
+                                    "date": {"type": "string"},
+                                    "notes": {
+                                        "default": "",
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                    },
+                                },
+                                "required": [
+                                    "operation",
+                                    "sourceId",
+                                    "targetId",
+                                    "amount",
+                                    "received",
+                                    "fee",
+                                    "date",
+                                    "notes",
+                                ],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "delete": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "DELETE /api/transfers/{id}",
+            },
+        },
+        "/api/agent": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/agent",
+            }
+        },
+        "/api/agent/tokens": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/agent/tokens",
+            }
+        },
+        "/api/agent/connections/{id}": {
+            "patch": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "PATCH /api/agent/connections/{id}",
+                "description": "验证当前密码后修改自己的有效 OAuth/PAT "
+                "连接权限；实际权限变更取消未确认草稿，不延长授权期限。只读用户不能授予写入。",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "scopes": {
+                                        "minItems": 1,
+                                        "maxItems": 4,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "read",
+                                                "draft",
+                                                "write",
+                                                "hidden_read",
+                                                "hidden_write",
+                                            ],
+                                        },
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 72,
+                                    },
+                                },
+                                "required": ["scopes", "password"],
+                                "additionalProperties": False,
+                            }
+                        }
+                    },
+                },
+            },
+            "delete": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "DELETE /api/agent/connections/{id}",
+            },
+        },
+        "/api/agent/authorizations/{id}": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/agent/authorizations/{id}",
+            },
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/agent/authorizations/{id}",
+            },
+        },
+        "/api/agent/drafts": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/agent/drafts",
+            }
+        },
+        "/api/agent/operations/confirm-batch": {
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/agent/operations/confirm-batch",
+            }
+        },
+        "/api/agent/operations/{id}": {
+            "get": {
+                "responses": {
+                    "200": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "GET /api/agent/operations/{id}",
+            },
+            "post": {
+                "responses": {
+                    "201": {"description": "Success"},
+                    "400": {
+                        "description": "请求格式、金额或业务校验失败，返回 { message }"
+                    },
+                    "401": {"description": "未登录或会话失效"},
+                    "403": {"description": "请求来源或访问权限不受信任"},
+                    "409": {"description": "数据冲突或业务记录不可修改"},
+                },
+                "summary": "POST /api/agent/operations/{id}",
+            },
+        },
+    },
+}

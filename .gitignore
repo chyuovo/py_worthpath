@@ -41,3 +41,7 @@ credentials*.json
 secrets/
 .DS_Store
 Thumbs.db
+
+# 临时浏览器验收与测试报告
+playwright-report/
+test-results/
