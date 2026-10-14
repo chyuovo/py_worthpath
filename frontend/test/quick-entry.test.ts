@@ -106,5 +106,5 @@ test('navigation retains access to visible children and restricts admin to admin
   assert.equal(navigationDestination('overview', ['overview']), 'history');
   assert.equal(navigationDestination('settings', ['settings', 'schedules'], 'user'), 'settings');
   assert.deepEqual(availablePages(settingsPages, [], 'user'), ['settings', 'schedules']);
-  assert.deepEqual(availablePages(settingsPages, [], 'admin'), ['settings', 'schedules', 'admin']);
+  assert.deepEqual(availablePages(settingsPages, [], 'admin'), ['settings', 'schedules']);
 });

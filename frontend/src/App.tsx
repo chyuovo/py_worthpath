@@ -212,6 +212,13 @@ function Empty({ title, body, action }: { title: string; body: string; action?: 
   );
 }
 export default function App() {
+  const [desktopNavigation, setDesktopNavigation] = useState(() => matchMedia('(min-width: 701px)').matches);
+  useEffect(() => {
+    const query = matchMedia('(min-width: 701px)');
+    const update = () => setDesktopNavigation(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
   const locale = useLocale();
   useEffect(() => {
     const root = document.documentElement;
@@ -1107,6 +1114,7 @@ export default function App() {
     ['calendar', CalendarDays, '日历'],
     ['account', Wallet, '账号'],
     ['settings', Settings, '设置'],
+    ...(desktopNavigation ? [['admin', ShieldCheck, '管理员后台'] as const] : []),
   ] as const;
   const hiddenMenus = user.hiddenMenus || [];
   const settingsItems = [
@@ -1148,7 +1156,7 @@ export default function App() {
       </span>
     </button>
   );
-  const activeGroup = navigationGroup(page);
+  const activeGroup = page === 'admin' && !desktopNavigation ? 'settings' : navigationGroup(page);
   const visibleNav = nav.filter(([key]) => navigationDestination(key, hiddenMenus, user.role));
   const sectionPages =
     activeGroup === 'account'
@@ -1156,7 +1164,9 @@ export default function App() {
       : activeGroup === 'overview' && page !== 'overview'
         ? overviewPages
         : activeGroup === 'settings'
-          ? settingsPages
+          ? desktopNavigation
+            ? settingsPages
+            : [...settingsPages, 'admin']
           : [];
   function navigateTo(next: string) {
     if (next === 'settings') setSettingsSection('');

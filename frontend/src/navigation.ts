@@ -1,6 +1,6 @@
 export const accountPages = ['account', 'asset', 'debt'] as const;
 export const overviewPages = ['overview', 'history'] as const;
-export const settingsPages = ['settings', 'schedules', 'admin'] as const;
+export const settingsPages = ['settings', 'schedules'] as const;
 
 export function navigationGroup(page: string) {
   if ((accountPages as readonly string[]).includes(page)) return 'account';

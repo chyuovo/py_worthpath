@@ -80,6 +80,8 @@ def upload(s, r, body):
     hash = hashlib.sha256(data).hexdigest()
     persist(hash, data)
     icon = one(s, Icon, ownerId=r.userId, hash=hash, shared=shared)
+    if icon and icon.deletedAt is not None:
+        fail("该共享图标已下架，请联系管理员恢复", 409)
     if not icon:
         icon = Icon(ownerId=r.userId, hash=hash, shared=shared, name=name, data=data)
         s.add(icon)
@@ -108,6 +110,7 @@ def dispatch(s, r, request, response, body):
         except (ValueError, AssertionError):
             fail("图标查询参数无效")
         where = [
+            Icon.deletedAt.is_(None),
             or_(Icon.shared.is_(True), Icon.ownerId == r.userId),
             Icon.name.contains(q, autoescape=True),
         ]

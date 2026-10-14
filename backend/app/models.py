@@ -741,6 +741,8 @@ class Icon(Base):
         server_default=text("0"),
         comment="是否公开共享给已登录用户",
     )
+    # 共享图标软删除仅下架，保留图片和既有账户引用。
+    deletedAt = Column(DATETIME(fsp=3), nullable=True, comment="共享图标下架时间，UTC")
     hash = Column(
         CHAR(64, collation="utf8mb4_unicode_ci"),
         nullable=False,
@@ -759,6 +761,7 @@ class Icon(Base):
             "ownerId", "hash", "shared", name="Icon_ownerId_hash_shared_key"
         ),
         Index("Icon_shared_name_idx", "shared", "name"),
+        Index("Icon_shared_deletedAt_name_idx", "shared", "deletedAt", "name"),
         {"comment": "可复用账户图标"},
     )
 

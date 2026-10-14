@@ -2090,3 +2090,27 @@ DOCUMENT = {
         },
     },
 }
+
+# 管理员共享图标管理，沿用 Cookie 和统一错误响应。
+for path, methods in {
+    "/api/admin/icons": ["get"],
+    "/api/admin/icons/{id}": ["delete"],
+    "/api/admin/icons/{id}/restore": ["post"],
+}.items():
+    DOCUMENT["paths"][path] = {}
+    for method in methods:
+        operation = {"summary": method.upper() + " " + path, "responses": {
+            "201" if method == "post" else "200": {"description": "Success"},
+            "400": {"description": "参数错误，返回 { message }"},
+            "401": {"description": "未登录"}, "403": {"description": "需要管理员权限"},
+            "404": {"description": "共享图标不存在"},
+        }}
+        if "{id}" in path:
+            operation["parameters"] = [{"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}]
+            operation["requestBody"] = {"required": True, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": False, "required": ["confirmed"], "properties": {"confirmed": {"type": "boolean", "enum": [True]}}}}}}
+        else:
+            operation["parameters"] = [{"name": name, "in": "query", "schema": schema} for name, schema in {
+                "q": {"type": "string", "maxLength": 100}, "status": {"type": "string", "enum": ["active", "deleted", "all"]},
+                "offset": {"type": "integer", "minimum": 0}, "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+            }.items()]
+        DOCUMENT["paths"][path][method] = operation

@@ -221,3 +221,10 @@ ROUTES = [
         "source": "apps/api/src/mcp/management.ts",
     },
 ]
+
+# 管理后台共享图标：仅管理员可下架和恢复，不物理删除图片。
+ROUTES.extend([
+    {"method": "GET", "path": "/api/admin/icons"},
+    {"method": "DELETE", "path": "/api/admin/icons/:id"},
+    {"method": "POST", "path": "/api/admin/icons/:id/restore"},
+])

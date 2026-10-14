@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, type User } from './api';
 import { t as tr } from './i18n';
+import { SharedIconAdmin } from './SharedIconAdmin';
 type Account = {
   id: string;
   username: string;
@@ -93,6 +94,7 @@ export function AdminPanel({ user, report }: { user: User; report: (e: unknown) 
   }
   return (
     <div className="admin-panel">
+      <SharedIconAdmin report={report} />
       <section className="panel">
         <h2>{tr('添加账号')}</h2>
         <p className="muted">{tr('新账号首次登录必须修改初始密码。')}</p>

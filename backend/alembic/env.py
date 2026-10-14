@@ -105,9 +105,12 @@ if context.is_offline_mode():
         context.run_migrations()
 else:
     with engine.connect() as connection:
+        metadata = metadata_for(connection)
+        # 结束结构读取触发的隐式事务，使 Alembic 能提交版本号更新。
+        connection.commit()
         context.configure(
             connection=connection,
-            target_metadata=metadata_for(connection),
+            target_metadata=metadata,
             compare_type=True,
             compare_server_default=compare_defaults,
             include_object=include_object,

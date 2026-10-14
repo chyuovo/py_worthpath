@@ -67,11 +67,14 @@ def detail(s, r, id):
     return {**p, **metal_performance(p, amount, bool(revs)), "amount": amount}
 
 
-def icon_visible(s, r, id):
+def icon_visible(s, r, id, previous_id=None):
     if id:
         icon = s.get(Icon, id)
         if not icon or not (icon.shared or icon.ownerId == r.userId):
             fail("图标不存在或无权使用")
+        # 已使用的图标继续显示和保存，禁止将下架图标新增到其他账户。
+        if icon.deletedAt is not None and id != previous_id:
+            fail("该图标已下架，请选择其他图标")
 
 
 def create(s, r, body):
@@ -110,7 +113,7 @@ def edit(s, r, id, body):
         and p.side != "liability"
     ):
         fail("信用卡和贷款账户必须为负债")
-    icon_visible(s, r, v.get("iconId"))
+    icon_visible(s, r, v.get("iconId"), p.iconId)
     for k, val in v.items():
         setattr(p, k, val)
     if p.kind == "asset" and p.category != "gold":

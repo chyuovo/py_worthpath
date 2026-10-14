@@ -44,6 +44,8 @@ cd /opt/docker/py_worthpath
 docker login git.chyuovo.top
 docker compose config --quiet
 docker compose pull app
+docker compose run --rm app python scripts/database.py backup
+docker compose run --rm app alembic upgrade head
 docker compose run --rm app python scripts/database.py check
 docker compose up -d --no-build app
 docker compose ps
@@ -61,7 +63,14 @@ nginx -t && nginx -s reload
 curl -f https://worthpath.chyuovo.top/api/health
 curl -I https://worthpath.chyuovo.top/
 docker compose pull app
+docker compose run --rm app python scripts/database.py backup
+docker compose run --rm app alembic upgrade head
+docker compose run --rm app python scripts/database.py check
 docker compose up -d --no-build app
 ```
 
 停止使用 `docker compose stop app`。latest 会被覆盖，更新前可给旧镜像另加回退标签；不执行 Git push。
+
+共享图标管理：电脑端主菜单进入“管理员后台”，可搜索、按状态筛选、软删除和恢复。下架不删除图片，不影响已有账户显示，普通用户无法管理。手机端保留设置分类中的入口。
+
+本次版本 `0002_icon_soft_delete` 仅为 Icon 表新增可空的 deletedAt 字段与查询索引；首次使用新镜像前必须按上面命令备份并执行 upgrade，不能用 stamp 跳过。备份命令会自动验证 gzip、摘要与表数据条数；失败时停止更新。
