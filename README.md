@@ -1,5 +1,7 @@
 # py_worthpath
 
+WorthPath 是一款个人资产与净值管理应用，支持账户、资产、负债、转账、借贷还款和历史记录管理，并提供图表、数据备份及 MCP 集成，帮助你持续了解个人财务状况。
+
 WorthPath 使用 Python FastAPI、SQLAlchemy、Alembic 和 MySQL，前端使用 React。当前项目独立运行，不再提供旧项目数据库接管工具。
 
 ## 两个独立项目
