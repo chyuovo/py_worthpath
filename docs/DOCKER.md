@@ -28,7 +28,7 @@ docker save -o exports/py-worthpath.tar py-worthpath:0.1.0
 
 ## 3. 服务器准备与启动（Linux）
 
-传输镜像包、compose.yaml 和 deploy/nginx-worthpath.conf 到目标项目目录。切换前由你停止旧应用，避免端口冲突及重复后台任务。
+传输镜像包和 compose.yaml 到目标项目目录。切换前由你停止旧应用，避免端口冲突及重复后台任务。
 
 ```sh
 export WORTHPATH_ENV_FILE=/opt/docker/worthpath/.env.production
@@ -53,7 +53,7 @@ docker network create --driver bridge --subnet 172.30.50.0/24 --gateway 172.30.5
 
 ## 4. HTTPS 代理
 
-用 deploy/nginx-worthpath.conf 替换现有 HTTPS 站点的 root/alias/try_files/location 设置，保留证书和 listen；所有路径均代理到 127.0.0.1:3100。若已有 Nginx 本身是容器，接入 worthpath 网络并将上游改为 app:3100，保留外部 Host。
+沿用现有 HTTPS 站点，所有路径均反向代理到 127.0.0.1:3100，不再用 root/alias/try_files 托管前端。保留外部 Host 和 X-Forwarded-Proto，关闭代理缓冲，上传上限设为 513m。若已有 Nginx 本身是容器，接入 worthpath 网络并将上游改为 app:3100，保留外部 Host。
 
 ```sh
 nginx -t && nginx -s reload
