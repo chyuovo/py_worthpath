@@ -1,0 +1,219 @@
+[
+  {
+    "name": "中国工商银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中国工商银行@3x.png",
+    "file": "01.png",
+    "sha256": "6a49f1e01332575c2fd5b8f3892d2969f6a254733a7731badae6b6c51ded6108"
+  },
+  {
+    "name": "中国农业银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中国农业银行@3x.png",
+    "file": "02.png",
+    "sha256": "cc023287b5a6d0187f9e8198a1791507b0655d593ee1e619e5b48f5cb351484d"
+  },
+  {
+    "name": "中国建设银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中国建设银行@3x.png",
+    "file": "03.png",
+    "sha256": "c1a1711a94ebb7e49d7494cb1d502a40f4bec8d30dc1e9f1cbd215c65fe233db"
+  },
+  {
+    "name": "中国银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中国银行@3x.png",
+    "file": "04.png",
+    "sha256": "718978d8d444321d356810841919aa81da590e5faf23fe1a0cad6e471dbcb024"
+  },
+  {
+    "name": "交通银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/交通银行@3x.png",
+    "file": "05.png",
+    "sha256": "75b5e40cae526194715688b6b8c63684093d4cccbcd498ebc4fe3a730a616e6c"
+  },
+  {
+    "name": "招商银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/招商银行@3x.png",
+    "file": "06.png",
+    "sha256": "abf071f561028bac84e7bd07f53314623c6983810d328b6f7990e6ca11736017"
+  },
+  {
+    "name": "中信银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中信银行@3x.png",
+    "file": "07.png",
+    "sha256": "51c873fcdabfab733700b48e772f3e03f2cb0918fe7a36a90a064297c018c530"
+  },
+  {
+    "name": "中国光大银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中国光大银行@3x.png",
+    "file": "08.png",
+    "sha256": "791d54ef3f49fdd5466c09f2cec955585f3af22bd2593f95ac259548c22fcfbc"
+  },
+  {
+    "name": "中国民生银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/中国民生银行@3x.png",
+    "file": "09.png",
+    "sha256": "a466c4469559b966d7096449aa155227b1e0b8965a883f544067d8361b7c0a9d"
+  },
+  {
+    "name": "兴业银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/兴业银行@3x.png",
+    "file": "10.png",
+    "sha256": "05b860edad339b114bb38ac954da2c49f41f3f3e8ddc6d8a5c939dc2fc747e07"
+  },
+  {
+    "name": "平安银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/平安银行@3x.png",
+    "file": "11.png",
+    "sha256": "7e057cd3f23fd5df3fca54e1dc0b253f9a61005f52e7f933087820f63aade94e"
+  },
+  {
+    "name": "上海浦东发展银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/上海浦东发展银行@3x.png",
+    "file": "12.png",
+    "sha256": "b205b7adaa577df7f367d4644717a0e3d6fbdba45a77590c2a0a5e9f2fe3c91f"
+  },
+  {
+    "name": "广发银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/广发银行@3x.png",
+    "file": "13.png",
+    "sha256": "1a3c1f7f2c738eabbb330bb3eb1a5888e69f731fd9f7f62729366172ee773919"
+  },
+  {
+    "name": "华夏银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/华夏银行@3x.png",
+    "file": "14.png",
+    "sha256": "1547c7d7a2436e80c39d197be26ffb77dc35728f69260608b0dc3bff2743be6f"
+  },
+  {
+    "name": "北京银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/北京银行@3x.png",
+    "file": "15.png",
+    "sha256": "d59af4b650391832e3a2a4f3d852b6dde6c791a5842a1ce570f9c2990157c6dd"
+  },
+  {
+    "name": "上海银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/上海银行@3x.png",
+    "file": "16.png",
+    "sha256": "0ea8f0650db5ca04c7869cc46a2043606cf0038d701f22f07c40cd3e6b70519e"
+  },
+  {
+    "name": "浙商银行",
+    "source": "https://raw.githubusercontent.com/cellier/bank-icon-cn/master/png/72/浙商银行@3x.png",
+    "file": "17.png",
+    "sha256": "8237233ee5ee7487ace0f84dce2832037ec13e2f004dcf6ed65652d783961656"
+  },
+  {
+    "name": "支付宝",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/alipay.svg",
+    "file": "18.png",
+    "sha256": "8049dde7772116e573864e0d3fab1fd5078c75f88e90dc01f70f63a789889a1a"
+  },
+  {
+    "name": "微信",
+    "source": "https://res.wx.qq.com/a/wx_fed/assets/res/NTI4MWU5.ico",
+    "file": "19.png",
+    "sha256": "a62d7d84bd02b1718106d294d1f2c8387f9967239696c1e8b446201b63f34dc7"
+  },
+  {
+    "name": "京东金融",
+    "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/74/af/7d74af96-af89-ae14-cbf5-5bbd89859ab7/AppIcon-0-1x_U007epad-0-1-0-85-220-0.png/512x512bb.jpg",
+    "file": "20.png",
+    "sha256": "9274fde6f793cf49f239fe3995cc959f33d71a02f93866e416ae5f5a533b05de",
+    "preserveWhite": true
+  },
+  {
+    "name": "汇丰香港",
+    "source": "https://www.hsbc.com.hk/etc.clientlibs/dpws/clientlibs-public/clientlib-site/resources/favicons/apple-touch-icon.png",
+    "file": "21.png",
+    "sha256": "d258f7e2ad662d73ec5c4a2c9e0b7d514b353df351bb8880b9b4731682788766"
+  },
+  {
+    "name": "恒生银行",
+    "source": "https://www.hangseng.com/etc.clientlibs/hase/clientlibs/clientlib-header/resources/favicon.ico",
+    "file": "22.png",
+    "sha256": "9d40bc7de25856427ba5ca9bcb6951652765cb0344ed14974d4ddc4ea17f9e65"
+  },
+  {
+    "name": "渣打香港",
+    "source": "https://av.sc.com/hk/content/images/content/images/cropped-512x512-1-150x150.png",
+    "file": "23.png",
+    "sha256": "1fdfd03637318e0ae31931a09a29bc5725342daab40e03ee715d635c0740c1a7"
+  },
+  {
+    "name": "东亚银行",
+    "source": "https://www.hkbea.com/images/favicon.ico",
+    "file": "24.png",
+    "sha256": "b99768b3931c08f69af569a9a662f490b5665d7203fbf1eeb49baa44ed511c1c"
+  },
+  {
+    "name": "星展香港",
+    "source": "https://www.dbs.com.hk/_next/public/favicon.ico?q=fa411ced-9fa6-4c3e-b208-d878769c84c9",
+    "file": "25.png",
+    "sha256": "3bcee651ede82d04774636cad1e14bbe448155ea17ac5f9a019bb7301b8811b2"
+  },
+  {
+    "name": "花旗香港",
+    "source": "https://www.citibank.com.hk/views/images/favicon.ico",
+    "file": "26.png",
+    "sha256": "a208032884b564421a9c5355c3806d4d33ef6616045444d58ec4595cb73abfa0"
+  },
+  {
+    "name": "Gate",
+    "source": "https://www.gate.com/favicon.ico",
+    "file": "27.png",
+    "sha256": "d8900cbf6d55a20ae77d5e83f224a10e051c06dc43a804960a86073c5c89d2a9"
+  },
+  {
+    "name": "Bybit",
+    "source": "https://www.bybit.com/favicon.ico",
+    "file": "28.png",
+    "sha256": "e6ca34b0ddfddd7fb2e32f4e137704f7e392463f817ac35fca47b30cd0885cc0"
+  },
+  {
+    "name": "Bitget",
+    "source": "https://www.bitget.com/baseasset/favicon4.png",
+    "file": "29.png",
+    "sha256": "96566dc4bc8606740f518de4126b24537e7d287ed7e8181eb9e641cfb80847a7"
+  },
+  {
+    "name": "中银香港",
+    "source": "https://www.bochk.com/etc/designs/bochk_web/images/icon/boc-icon-32.ico",
+    "file": "30.png",
+    "sha256": "8dd2451e41db10e438ae7708bae0b0090fa350da66e7a46571293427311268ef"
+  },
+  {
+    "name": "币安 Binance",
+    "source": "https://bin.bnbstatic.com/static/images/common/favicon.ico",
+    "file": "31.png",
+    "sha256": "8318ebbcb1cb4729eb0f78bb058dc618c3b63f9f9f0070a1a7a3265fdc79b833"
+  },
+  {
+    "name": "ZA BANK 众安银行",
+    "source": "https://cdn.za.group/if/za-group-portal-web/assets/images/share-logo.png",
+    "file": "32.png",
+    "sha256": "e67a4839b9f81bdd94a104f15ec8c1fc9fad1df1949b4e216662c2089c84246e"
+  },
+  {
+    "name": "微众银行 WeBank",
+    "source": "https://tctp.tctpwebankcdn.net/owb-res/owb-res/assets/mainGenerator.811f2078.js",
+    "file": "33.png",
+    "sha256": "ec3be0bf19bbb8c633ee7e13636f96d5c70584cefe0febfb8da294bcdaec6104"
+  },
+  {
+    "name": "大象银行 EleBank",
+    "file": "34.png",
+    "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d4/bc/60/d4bc6004-3898-c9c3-3571-f3ffe4b46b48/Bank-Airstar-0-0-1x_U007epad-0-1-sRGB-85-220.png/512x512bb.jpg",
+    "sha256": "fa7306514308f0a8cc73fa3847002d768094cec25aceeca324da440fbbee2934"
+  },
+  {
+    "name": "抖音月付",
+    "source": "https://p26-infras.byteimg.com/static-assets/be18bb89d2ceeec6407aae38dc5e894c.png~tplv-49obo7mizy-png75.png",
+    "file": "35.png",
+    "sha256": "78e612542243c1b72d9ad6e3793efd2702295c7dafdcac7427389b7cafd81dea"
+  },
+  {
+    "name": "东方财富",
+    "source": "https://g1.dfcfw.com/g4/202307/20230731180250.png",
+    "file": "36.png",
+    "sha256": "f4076632019946fc25db345308ca360eea1faf0d3009f0908e98605c97ed0a5d"
+  }
+]
