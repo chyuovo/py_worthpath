@@ -191,6 +191,8 @@ def test_mcp_permissions_idempotency_and_draft(users):
     read = token(a, ["read"])
     direct = token(a, ["read", "write", "hidden_read", "hidden_write"])
     draft = token(a, ["read", "draft"])
+    # 已移除的工具必须返回工具错误，不能中断整个 MCP 会话。
+    assert rpc(direct["token"], "backup_export")["isError"]
     info = rpc(direct["token"], "connection_info")["structuredContent"]["data"]
     assert info["readHidden"] and info["writeHidden"] and info["permission"] == "write"
     state = rpc(direct["token"], "state_get")["structuredContent"]["data"]["state"]

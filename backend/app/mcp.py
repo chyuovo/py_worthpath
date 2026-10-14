@@ -266,11 +266,7 @@ async def handle(request: Request):
     elif method == "tools/list":
         result = {"tools": catalogue()}
     elif method == "tools/call":
-        if (
-            not isinstance(params, dict)
-            or not isinstance(params.get("name"), str)
-            or params["name"] not in {tool["name"] for tool in catalogue()}
-        ):
+        if not isinstance(params, dict) or not isinstance(params.get("name"), str):
             return JSONResponse(
                 {
                     "jsonrpc": "2.0",
@@ -281,6 +277,7 @@ async def handle(request: Request):
                     },
                 }
             )
+        # 与原 SDK 一致：未知工具作为 isError 工具结果返回，客户端仍可继续会话。
         name = params.get("name")
         status = "success"
         try:
