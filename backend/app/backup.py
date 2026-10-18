@@ -492,7 +492,10 @@ def _validate(b):
                 fail("转账关联无效")
         elif (
             source["side"] != "asset"
-            or target["kind"] != "debt"
+            or not (
+                target["kind"] == "debt"
+                or (t["operation"] == "repay" and target["kind"] == "account")
+            )
             or target["side"]
             != ("liability" if t["operation"] in ("borrow", "repay") else "asset")
         ):

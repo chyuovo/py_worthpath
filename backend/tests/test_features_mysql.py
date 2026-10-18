@@ -1,5 +1,7 @@
 # 使用真实 MySQL 和专用临时用户验证模块；不会清空共享库或修改既有用户。
 import io, json, uuid, base64, hashlib
+from copy import deepcopy
+from fastapi import HTTPException
 import httpx, pytest
 from PIL import Image
 from sqlalchemy import select
@@ -7,6 +9,7 @@ from test_core_mysql import users, make, API_URL, ROOT_URL
 from app.common import today, now, business_time, fixed, dec
 from app.database import transaction
 from app.models import *
+from app.backup import unpack, validate
 
 
 def test_settings_calendar_schedule(users):
@@ -107,6 +110,78 @@ def test_icon_and_zip_roundtrip(users):
         "/positions/" + source + "/revisions", json={"amount": "52", "date": today()}
     )
     assert a.post("/backup/clear", json={"confirmation": "确定清空"}).status_code == 409
+
+
+@pytest.mark.parametrize("target_kind", ["account", "debt"])
+def test_repayment_zip_roundtrip(users, target_kind):
+    a, b = users
+    source = make(a, "repayment source", "100")
+    target = make(a, "repayment target", "50", "liability", target_kind)
+    payment = a.post(
+        "/transfers",
+        json=dict(
+            sourceId=source,
+            targetId=target,
+            operation="repay",
+            amount="12.34",
+            received="12.34",
+            fee="0.01",
+            date=today(),
+        ),
+    )
+    assert payment.status_code == 201, payment.text
+    backup = a.get("/backup")
+    assert backup.status_code == 200, backup.text
+    original = unpack(backup.content)
+    validate(original)
+    # 兼容负债账户还款仍须拒绝错误的账户类型、方向和历史金额。
+    for role, changes in (
+        (source, {"side": "liability"}),
+        (target, {"kind": "asset", "side": "asset", "category": "other"}),
+        (target, {"side": "asset", "category": "other"}),
+    ):
+        invalid = deepcopy(original)
+        next(p for p in invalid["positions"] if p["id"] == role).update(changes)
+        with pytest.raises(HTTPException, match="转账关联无效"):
+            validate(invalid)
+    if target_kind == "account":
+        for operation in ("borrow", "lend", "collect"):
+            invalid = deepcopy(original)
+            invalid["transfers"][0]["operation"] = operation
+            with pytest.raises(HTTPException, match="转账关联无效"):
+                validate(invalid)
+    invalid = deepcopy(original)
+    invalid["transfers"][0]["fee"] = "0.02"
+    with pytest.raises(HTTPException, match="转账历史与双方金额不一致"):
+        validate(invalid)
+
+    preview = b.post(
+        "/backup/upload",
+        files={"file": ("repayment.zip", backup.content, "application/zip")},
+    )
+    assert preview.status_code == 201, preview.text
+    assert preview.json()["transfers"] == 1
+    restored = b.post(
+        "/backup/import-file",
+        json={"confirmed": True, "token": preview.json()["token"]},
+    )
+    assert restored.status_code == 201, restored.text
+    positions = b.get("/positions").json()
+    assert {p["name"]: p["amount"] for p in positions} == {
+        "repayment source": "87.65",
+        "repayment target": "37.66",
+    }
+    exported = b.get("/backup")
+    assert exported.status_code == 200, exported.text
+    roundtrip = validate(unpack(exported.content))
+    repayment = roundtrip["transfers"][0]
+    assert repayment["operation"] == "repay"
+    assert repayment["importedFromId"] == payment.json()["id"]
+    by_id = {p["id"]: p for p in roundtrip["positions"]}
+    for role in ("source", "target"):
+        assert repayment[role + "RevisionId"] in {
+            rev["id"] for rev in by_id[repayment[role + "Id"]]["revisions"]
+        }
 
 
 def test_metal_decimal_valuation(users):
