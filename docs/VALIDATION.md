@@ -102,3 +102,12 @@ ORM 与真实结构已匹配字段、类型、精度、默认值、索引、外�
 - 民生银行图标已存在，沿用 ID 和图片；欧意图标来自官网 favicon，转换为 PNG 并保留白色，清单记录 SHA-256。
 - 无数据库结构改动，未连接或修改业务数据库。部署后运行 `python scripts/seed_icons.py` 同步图标；普通历史和资金往来删除仍由原有接口处理。
 - 临时浏览器测试页面已清理。
+
+## 生产容器更新（2026-10-21 12:15 UTC+8）
+
+- 从本次源码构建 `linux/amd64` 镜像并上传 `git.chyuovo.top/chyuovo/py_worthpath:latest`，摘要 `sha256:b24c647563f7eba77dcec6324da3db95870d62cd699bddb980e16583945636b2`。
+- 服务器更新前创建数据库备份 `20261021-041358.sql.gz`，压缩、摘要、建表与逐表 INSERT 数量校验通过；旧镜像保留为 `py-worthpath-rollback:20261021-before-update`。
+- 新镜像数据库检查返回 `No new upgrade operations detected.`，无需迁移。容器通过 `docker compose up -d --no-build --wait --wait-timeout 90 app` 更新并达到 healthy。
+- 在新容器运行 `python scripts/seed_icons.py` 成功，内置目录为 37 项。
+- 公网 `/api/health` 返回 `status: ok`；首页引用本次 `index-CWUO8UQE.js`，启动日志没有 ERROR、Traceback 或 CRITICAL。未执行真实账目删除验收。
+- 服务器沿用已有 `devopsnetwork` 和 runtime/backups 命名卷，未覆盖为本地 Compose 的网络及绑定目录配置；此轮仅更新应用镜像和图标。
