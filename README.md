@@ -33,7 +33,6 @@ uv run python scripts/database.py check
 ```powershell
 cd E:\py_worthpath\frontend
 pnpm install --frozen-lockfile
-if (!(Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
 ## 日常启动

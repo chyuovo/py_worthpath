@@ -9,6 +9,13 @@ docker build -t git.chyuovo.top/chyuovo/py_worthpath:latest .
 docker push git.chyuovo.top/chyuovo/py_worthpath:latest
 ```
 
+### 服务器更新
+```
+# 连接服务器
+ssh ubuntu
+# 更新compose
+```
+
 ### 数据库检查
 ```shell
 cd /opt/docker/py_worthpath
