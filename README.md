@@ -125,3 +125,7 @@ git diff --cached --stat
 ```
 
 具体验收结果、临时配置和未验证内容见 docs/VALIDATION.md。自动公共行情默认开启；回归过程可仅在当前后端进程设置 `$env:WORTHPATH_ENABLE_QUOTES = 'false'`，避免对既有用户执行行情刷新。未永久修改系统 PATH。
+
+### 2026-10-21 记账与图标更新
+
+快速记账隐藏时间输入和本次记录时间，提交时自动记录北京时间（UTC+8）；普通记账与历史更正仍可选时间。删除弹窗关闭后，通知使用固定 Portal 容器继续显示。内置目录包含中国民生银行及新增的欧意 OKX 图标。已有安装需在后端目录运行 `uv run python scripts/seed_icons.py`，容器使用 `docker compose run --rm app python scripts/seed_icons.py` 同步图标。此操作更新内置图标数据，无需数据库结构迁移；管理员已下架图标不会自动恢复。

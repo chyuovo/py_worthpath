@@ -50,7 +50,8 @@ function ToastItem({ notice, remove }: { notice: Notice; remove: (id: number) =>
 export function ToastViewport() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const panel = useRef<HTMLDivElement>(null);
-  const [host, setHost] = useState<HTMLElement>(document.body);
+  // Keep React's portal target stable while dialogs open and close.
+  const [host] = useState(() => document.createElement('div'));
   useEffect(() => {
     // A native modal makes content outside it inert. Keep the live notification
     // and its dismiss control within the current dialog, while the popover
@@ -60,7 +61,7 @@ export function ToastViewport() {
         'dialog[open], [role="dialog"][aria-modal="true"]',
       );
       const next = dialogs.item(dialogs.length - 1) ?? document.body;
-      setHost((current) => (current === next ? current : next));
+      if (host.parentElement !== next) next.appendChild(host);
     };
     const observer = new MutationObserver(updateHost);
     observer.observe(document.body, {
@@ -70,8 +71,11 @@ export function ToastViewport() {
       attributeFilter: ['open'],
     });
     updateHost();
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      observer.disconnect();
+      host.remove();
+    };
+  }, [host]);
   const remove = useRef((id: number) =>
     setNotices((rows) => rows.filter((n) => n.id !== id)),
   ).current;

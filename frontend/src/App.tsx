@@ -2973,7 +2973,7 @@ export default function App() {
               ? modal.h.name
               : modal.transfer?.source.name + ' ↔ ' + modal.transfer?.target.name}
           </p>
-          <p className="muted">{displayTime(modal.h?.time || modal.transfer!.date)}</p>
+          <p className="muted">{displayTime(modal.h ? modal.h.time || modal.h.date : modal.transfer!.date)}</p>
           <p>
             {tr(
               modal.transfer ||
@@ -3178,6 +3178,7 @@ export default function App() {
                   v = Object.fromEntries(f.entries()),
                   kind = modal.kind,
                   mp = modal.p;
+                if (modal.quick) v.date = nowMinute();
                 if (kind === 'reveal') {
                   void act(
                     () => api('/auth/reveal', 'POST', { password: f.get('password') }),
@@ -3420,7 +3421,7 @@ export default function App() {
                   </p>
                 </>
               )}
-              {['account', 'asset', 'debt', 'revision', 'correction'].includes(modal.kind) && (
+              {!modal.quick && ['account', 'asset', 'debt', 'revision', 'correction'].includes(modal.kind) && (
                 <Field label={tr('记录时间（UTC+8）')}>
                   <input
                     type={'datetime-local'}

@@ -46,6 +46,7 @@ test('session journal displays exact balances and distinguishes saved versus und
   );
   assert.match(html, /125\.87654321/);
   assert.match(html, /撤回/);
+  assert.doesNotMatch(html, /2026-10-04|12:00|UTC\+8/);
   const undone = renderToStaticMarkup(
     createElement(QuickJournal, {
       entries: [{ ...entry, undone: true }],

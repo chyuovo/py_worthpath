@@ -215,5 +215,12 @@
     "source": "https://g1.dfcfw.com/g4/202307/20230731180250.png",
     "file": "36.png",
     "sha256": "f4076632019946fc25db345308ca360eea1faf0d3009f0908e98605c97ed0a5d"
+  },
+  {
+    "name": "欧意 OKX",
+    "source": "https://www.okx.com/favicon.ico",
+    "file": "37.png",
+    "sha256": "45cf25f877ddfa4c95e177bf44bed28177dd44b18d69daac6a592c1745f3ea55",
+    "preserveWhite": true
   }
 ]

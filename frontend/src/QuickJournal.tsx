@@ -94,7 +94,6 @@ export function QuickJournal({
               {entry.kind === 'mark' && (
                 <p>{tr(entry.month ? '已标记本月还款' : '已取消本月标记')}</p>
               )}
-              <small>{entry.date.replace('T', ' ')} · UTC+8</small>
               {entry.undone ? (
                 <span className="badge">{tr('已撤回')}</span>
               ) : (
